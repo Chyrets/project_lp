@@ -27,3 +27,8 @@ class Profile(models.Model):
         if not self.slug:
             self.slug = slugify(f'{self.name}-{rand_slug()}')
         super(Profile, self).save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Профиль"
+        verbose_name_plural = "Профили"
+        ordering = ['user', 'name']
