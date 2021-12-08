@@ -1,14 +1,8 @@
-import random
-import string
-
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.text import slugify
 
-
-def rand_slug() -> str:
-    """Создание случайной строки для поля slug"""
-    return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
+from .services.model_services import rand_slug
 
 
 class Profile(models.Model):
