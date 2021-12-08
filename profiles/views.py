@@ -1,3 +1,11 @@
 from django.shortcuts import render
 
-# Create your views here.
+
+def index(request):
+    """Функция отображения для первичной домашней страницы сайта."""
+    title = "Домашняя страница"
+    content = {
+        "title": title
+    }
+
+    return render(request, 'base.html', content)
