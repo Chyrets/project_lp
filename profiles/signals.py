@@ -6,6 +6,7 @@ from .models import Profile
 
 
 @receiver(post_save, sender=User)
-def create_profile_for_new_user(sender, instance, **kwargs):
+def create_profile_for_new_user(sender, instance, created, **kwargs):
     """Создание профиля для нового пользователя"""
-    Profile.objects.create(name=instance.username, user=instance)
+    if created:
+        Profile.objects.create(name=instance.username, user=instance)
