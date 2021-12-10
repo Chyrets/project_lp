@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.views import View
 
 from .forms import CustomUserCreationForm
@@ -69,3 +69,9 @@ class RegisterUserView(View):
 
         content = {'form': form}
         return render(request, self.template_name, content)
+
+
+def logout_user(request):
+    """Деавторизация пользователя"""
+    logout(request)
+    return redirect('login')
