@@ -4,7 +4,7 @@ from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Profile
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, EditUserProfileForm
 
 
 def index(request):
@@ -85,6 +85,7 @@ class UserProfilesView(LoginRequiredMixin, View):
     login_url = '/login/'
 
     def get(self, request):
+        """Отображение списка профилей пользователя"""
         user = request.user
         profiles = Profile.objects.filter(user=user)
 
@@ -92,3 +93,40 @@ class UserProfilesView(LoginRequiredMixin, View):
             'profiles': profiles
         }
         return render(request, self.template_name, context)
+
+
+class EditUserProfileView(LoginRequiredMixin, View):
+    """Редактирование профиля пользователя"""
+    template_name = 'profiles/edit_profile.html'
+    form = EditUserProfileForm
+    login_url = '/login/'
+
+    def get(self, request, profile_slug):
+        """Отображение информации профиля по его slug"""
+        user = request.user
+        profile = Profile.objects.get(slug=profile_slug, user=user)
+        form = self.form(instance=profile)
+
+        context = {
+            'profile': profile,
+            'form': form
+        }
+
+        return render(request, self.template_name, context)
+
+    def post(self, request, profile_slug):
+        """Изменение профиля"""
+        user = request.user
+        profile = Profile.objects.get(slug=profile_slug, user=user)
+        form = self.form(request.POST, instance=profile)
+
+        if form.is_valid():
+            profile = form.save()
+
+        context = {
+            'profile': profile,
+            'form': form
+        }
+
+        return render(request, self.template_name, context)
+
