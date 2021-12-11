@@ -20,11 +20,11 @@ class CustomUserCreationForm(UserCreationForm):
         self.fields['password2'].widget.attrs.update({'class': 'form-control', 'placeholder': 'подтвердите пароль'})
 
 
-class EditUserProfileForm(ModelForm):
-    """Форма редактирования профиля пользователя"""
+class UserProfileForm(ModelForm):
+    """Форма добавления и редактирования профиля пользователя"""
 
     def __init__(self, *args, **kwargs):
-        super(EditUserProfileForm, self).__init__(*args, **kwargs)
+        super(UserProfileForm, self).__init__(*args, **kwargs)
 
         for name, field in self.fields.items():
             field.widget.attrs.update({'class': 'form-control'})

@@ -4,7 +4,7 @@ from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Profile
-from .forms import CustomUserCreationForm, EditUserProfileForm
+from .forms import CustomUserCreationForm, UserProfileForm
 
 
 def index(request):
@@ -95,10 +95,42 @@ class UserProfilesView(LoginRequiredMixin, View):
         return render(request, self.template_name, context)
 
 
+class AddUserProfileView(LoginRequiredMixin, View):
+    """Добавление нового профиля пользователя"""
+    template_name = 'profiles/add_profile.html'
+    form = UserProfileForm
+    login_url = '/login/'
+
+    def get(self, request):
+        """Отображение формы для добавления нового профиля"""
+        context = {
+            'form': self.form()
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request):
+        """Обработка формы добавления профиля"""
+        user = request.user
+        form = self.form(request.POST)
+
+        if form.is_valid():
+            profile = form.save(commit=False)
+            profile.user = user
+            profile.save()
+
+            return redirect('home')
+
+        context = {
+            'form': form
+        }
+
+        return render(request, self.template_name, context)
+
+
 class EditUserProfileView(LoginRequiredMixin, View):
     """Редактирование профиля пользователя"""
     template_name = 'profiles/edit_profile.html'
-    form = EditUserProfileForm
+    form = UserProfileForm
     login_url = '/login/'
 
     def get(self, request, profile_slug):
