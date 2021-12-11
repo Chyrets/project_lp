@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
 
+from .models import Profile
 from .forms import CustomUserCreationForm
 
 
@@ -75,3 +77,18 @@ def logout_user(request):
     """Деавторизация пользователя"""
     logout(request)
     return redirect('login')
+
+
+class UserProfilesView(LoginRequiredMixin, View):
+    """Список профилей пользователя"""
+    template_name = 'profiles/profiles_list.html'
+    login_url = '/login/'
+
+    def get(self, request):
+        user = request.user
+        profiles = Profile.objects.filter(user=user)
+
+        context = {
+            'profiles': profiles
+        }
+        return render(request, self.template_name, context)

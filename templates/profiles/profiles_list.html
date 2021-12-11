@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <ul class="list-group list-group-flush">
+        {% for profile in profiles %}
+            <li class="list-group-item">
+                <div class="d-flex position-relative">
+                    <img src="{% static 'profiles/images/user_icon.png' %}" class="flex-shrink-0 me-3" alt="...">
+                    <div class="mt-4">
+                        <h5 class="mt-0">{{ profile.name }}</h5>
+                        <p>{{ profile.about }}</p>
+                        {% if profile.birthday %}
+                            <p>{{ profile.birthday }}</p>
+                        {% endif %}
+                        <a href="#" class="stretched-link">Редактировать</a>
+                    </div>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+    </div>
+{% endblock content %}
