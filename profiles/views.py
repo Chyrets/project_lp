@@ -118,7 +118,7 @@ class AddUserProfileView(LoginRequiredMixin, View):
             profile.user = user
             profile.save()
 
-            return redirect('home')
+            return redirect('profiles')
 
         context = {
             'form': form
@@ -162,3 +162,28 @@ class EditUserProfileView(LoginRequiredMixin, View):
 
         return render(request, self.template_name, context)
 
+
+class DeleteUserProfile(LoginRequiredMixin, View):
+    """Удаление профиля пользователя"""
+    template_name = 'profiles/delete_profile.html'
+    login_url = '/login/'
+
+    def get(self, request, profile_slug):
+        """Отображение информации об профиле, который собираются удалить"""
+        user = request.user
+        profile = Profile.objects.get(slug=profile_slug, user=user)
+
+        context = {
+            'profile': profile
+        }
+
+        return render(request, self.template_name, context)
+
+    def post(self, request, profile_slug):
+        """Обработка запроса удаления профиля"""
+        user = request.user
+        profile = Profile.objects.get(slug=profile_slug, user=user)
+
+        profile.delete()
+
+        return redirect('profiles')
