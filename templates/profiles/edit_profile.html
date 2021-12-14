@@ -18,8 +18,9 @@
                         </div>
                     {% endfor %}
                     <button type="submit" class="btn btn-outline-primary mt-3">Сохранить</button>
-                    <a class="btn btn-outline-primary mt-3" href="{% url 'profiles' %}" role="button">Назад</a>
-                    <a class="btn btn-outline-danger mt-3" href="{% url 'delete_profile' profile.slug %}" role="button">Удалить</a>
+                    <a class="btn btn-outline-primary mt-3" href="{% url 'profiles:profiles' %}" role="button">Назад</a>
+                    <a class="btn btn-outline-danger mt-3" href="{% url 'profiles:delete_profile' profile.slug %}"
+                       role="button">Удалить</a>
                 </div>
             </div>
         </div>

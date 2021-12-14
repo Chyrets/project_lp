@@ -13,7 +13,7 @@
                         {% if profile.birthday %}
                             <p>{{ profile.birthday }}</p>
                         {% endif %}
-                        <a href="{% url 'edit_profile' profile.slug %}" class="stretched-link">Редактировать</a>
+                        <a href="{% url 'profiles:edit_profile' profile.slug %}" class="stretched-link">Редактировать</a>
                     </div>
                 </div>
             </li>
