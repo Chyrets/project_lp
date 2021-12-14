@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
+from django.urls import reverse
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -34,7 +35,7 @@ class LoginUserView(View):
 
         if user is not None:
             login(request, user)
-            return redirect('home')
+            return redirect('profiles:home')
         else:
             content = {
                 "error": 'Неверные имя пользователя или пароль'
@@ -67,7 +68,7 @@ class RegisterUserView(View):
 
             if user is not None:
                 login(request, user)
-                return redirect('home')
+                return redirect('profiles:home')
 
         content = {'form': form}
         return render(request, self.template_name, content)
@@ -76,13 +77,16 @@ class RegisterUserView(View):
 def logout_user(request):
     """Деавторизация пользователя"""
     logout(request)
-    return redirect('login')
+    return redirect('profiles:login')
 
 
 class UserProfilesView(LoginRequiredMixin, View):
     """Список профилей пользователя"""
     template_name = 'profiles/profiles_list.html'
-    login_url = '/login/'
+
+    def get_login_url(self):
+        """Перенаправляет на страницу авторизации, если пользователь не авторизован"""
+        return reverse('profiles:login')
 
     def get(self, request):
         """Отображение списка профилей пользователя"""
@@ -99,7 +103,10 @@ class AddUserProfileView(LoginRequiredMixin, View):
     """Добавление нового профиля пользователя"""
     template_name = 'profiles/add_profile.html'
     form = UserProfileForm
-    login_url = '/login/'
+
+    def get_login_url(self):
+        """Перенаправляет на страницу авторизации, если пользователь не авторизован"""
+        return reverse('profiles:login')
 
     def get(self, request):
         """Отображение формы для добавления нового профиля"""
@@ -118,7 +125,7 @@ class AddUserProfileView(LoginRequiredMixin, View):
             profile.user = user
             profile.save()
 
-            return redirect('profiles')
+            return redirect('profiles:profiles')
 
         context = {
             'form': form
@@ -131,7 +138,10 @@ class EditUserProfileView(LoginRequiredMixin, View):
     """Редактирование профиля пользователя"""
     template_name = 'profiles/edit_profile.html'
     form = UserProfileForm
-    login_url = '/login/'
+
+    def get_login_url(self):
+        """Перенаправляет на страницу авторизации, если пользователь не авторизован"""
+        return reverse('profiles:login')
 
     def get(self, request, profile_slug):
         """Отображение информации профиля по его slug"""
@@ -166,7 +176,10 @@ class EditUserProfileView(LoginRequiredMixin, View):
 class DeleteUserProfile(LoginRequiredMixin, View):
     """Удаление профиля пользователя"""
     template_name = 'profiles/delete_profile.html'
-    login_url = '/login/'
+
+    def get_login_url(self):
+        """Перенаправляет на страницу авторизации, если пользователь не авторизован"""
+        return reverse('profiles:login')
 
     def get(self, request, profile_slug):
         """Отображение информации об профиле, который собираются удалить"""
@@ -186,4 +199,4 @@ class DeleteUserProfile(LoginRequiredMixin, View):
 
         profile.delete()
 
-        return redirect('profiles')
+        return redirect('profiles:profiles')
