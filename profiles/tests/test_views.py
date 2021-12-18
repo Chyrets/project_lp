@@ -11,6 +11,17 @@ class LoginUserTest(TestCase):
         self.crd_incorrect_password = {'username': 'test_user', 'password': 'password3'}
         User.objects.create_user(**self.credential)
 
+    def test_view_url_accessible_by_name(self):
+        """Проверка доступа к странице по имени profiles:login"""
+        resp = self.client.get(reverse('profiles:login'))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_view_uses_correct_template(self):
+        """Проверка загружаемого template"""
+        resp = self.client.get(reverse('profiles:login'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, 'profiles/login.html')
+
     def test_login_correct_username_and_password(self):
         """Проверка авторизации пользователя с правильными данными"""
         response = self.client.post(reverse('profiles:login'), self.credential, follow=True)
@@ -25,5 +36,3 @@ class LoginUserTest(TestCase):
         """Проверка авторизации пользователя с неправильным password"""
         response = self.client.post(reverse('profiles:login'), self.crd_incorrect_password, follow=True)
         self.assertFalse(response.context['user'].is_authenticated)
-
-
