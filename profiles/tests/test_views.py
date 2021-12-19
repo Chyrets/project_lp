@@ -157,7 +157,7 @@ class AddUserProfileTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'profiles/add_profile.html')
 
-    def test_create_user_profile_with_valid_date(self):
+    def test_create_user_profile_with_valid_data(self):
         """Проверка создания профиля с корректными данными"""
         self.client.login(username='test_user1', password='password')
         response = self.client.post(reverse('profiles:add_profile'), data=self.valid_data)
@@ -176,3 +176,79 @@ class AddUserProfileTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(profile_list), 2)
+
+
+class EditUserProfileTest(TestCase):
+    """Тесты для класса редактирования профиля"""
+
+    def setUp(self) -> None:
+        test_user1 = User.objects.create_user(username='test_user1', password='password')
+        test_user1.save()
+        user_data = {'name': 'test_profile1',
+                     'about': 'About test profile1',
+                     'birthday': '2002-01-01',
+                     'user': test_user1}
+        self.test_profile1 = Profile.objects.create(**user_data)
+        self.valid_data = {'name': 'test_profile1_1',
+                           'about': 'About test profile1_1',
+                           'birthday': '2002-01-02', }
+        self.invalid_birthday = {'name': 'test_profile1',
+                                 'about': 'About test profile1',
+                                 'birthday': '2002.01-01'}
+
+    def _login_user(self, username: str, password: str) -> bool:
+        """Авторизовать пользователя"""
+        return self.client.login(username=username, password=password)
+
+    def _get_response(self, type_data):
+        """Получить ответ от метода post"""
+        if type_data == self.valid_data:
+            response = self.client.post(
+                reverse('profiles:edit_profile', kwargs={'profile_slug': self.test_profile1.slug}),
+                data=self.valid_data
+            )
+        else:
+            response = self.client.post(
+                reverse('profiles:edit_profile', kwargs={'profile_slug': self.test_profile1.slug}),
+                data=self.invalid_birthday
+            )
+        return response
+
+    def test_redirect_if_not_logged_in(self):
+        """Проверка перенаправления неавторизованного пользователя"""
+        response = self.client.get(reverse('profiles:edit_profile', kwargs={'profile_slug': self.test_profile1.slug}))
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith('/login/'))
+
+    def test_logged_in_uses_correct_template(self):
+        """Проверка отображения нужного template для авторизованного пользователя"""
+        self.client.login(username='test_user1', password='password')
+        response = self.client.get(reverse('profiles:edit_profile', kwargs={'profile_slug': self.test_profile1.slug}))
+
+        self.assertEqual(str(response.context['user']), 'test_user1')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'profiles/edit_profile.html')
+
+    def test_edit_user_profile_with_valid_data(self):
+        """Проверка редактирования профиля с корректными данными"""
+        self._login_user('test_user1', 'password')
+        response = self._get_response(self.valid_data)
+        profile = Profile.objects.get(slug=self.test_profile1.slug)
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(profile.name, 'test_profile1_1')
+        self.assertEqual(profile.about, 'About test profile1_1')
+        self.assertEqual(profile.birthday.strftime('%Y-%m-%d'), '2002-01-02')
+
+    def test_edit_user_with_invalid_birthday(self):
+        """Проверка редактирования пользователя с некорректной датой"""
+        self._login_user('test_user1', 'password')
+        response = self._get_response(self.invalid_birthday)
+        profile = Profile.objects.get(slug=self.test_profile1.slug)
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(profile.name, 'test_profile1')
+        self.assertEqual(profile.about, 'About test profile1')
+        self.assertEqual(profile.birthday.strftime('%Y-%m-%d'), '2002-01-01')
