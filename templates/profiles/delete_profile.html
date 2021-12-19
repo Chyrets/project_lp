@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="mt-2">
+        <h4 class="text-danger">Вы уверенны, что хотите удалить этот профиль?</h4>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="col-2">
+                <img src="{% static 'profiles/images/user_icon.png' %}" class="flex-shrink-0 me-3" alt="...">
+            </div>
+            <div class=" col-10 mt-4">
+                <h5 class="mt-0">{{ profile.name }}</h5>
+                <p>{{ profile.about }}</p>
+                {% if profile.birthday %}
+                    <p>{{ profile.birthday }}</p>
+                {% endif %}
+                <a class="btn btn-outline-primary mt-3" href="{% url 'profiles:edit_profile' profile.slug %}"
+                   role="button">Назад
+                </a>
+                <button type="submit" class="btn btn-outline-danger mt-3">Удалить</button>
+            </div>
+        </div>
+    </form>
+{% endblock %}
