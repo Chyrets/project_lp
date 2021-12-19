@@ -7,6 +7,7 @@ from profiles.models import Profile
 
 class LoginUserTest(TestCase):
     """Тест класса авторизации пользователя"""
+
     def setUp(self) -> None:
         self.credential = {'username': 'test_user', 'password': 'password'}
         self.crd_incorrect_username = {'username': 'test_user2', 'password': 'password'}
@@ -117,3 +118,61 @@ class UserProfilesTest(TestCase):
         profile_list = Profile.objects.filter(user=response.context['user'])
 
         self.assertEqual(profile_list.count(), 11)
+
+
+class AddUserProfileTest(TestCase):
+    """Тесты для класса добавления нового профиля"""
+
+    def setUp(self) -> None:
+        test_user1 = User.objects.create_user(username='test_user1', password='password')
+        test_user1.save()
+        test_user2 = User.objects.create_user(username='test_user2', password='password')
+        test_user2.save()
+
+        self.valid_data = {'name': 'test_profile1',
+                           'about': 'About test profile1',
+                           'birthday': '2002-01-01',
+                           'user': test_user1}
+        self.invalid_birthday = {'name': 'test_profile1',
+                                 'about': 'About test profile1',
+                                 'birthday': '2002.10-01',
+                                 'user': test_user1}
+        self.invalid_user = {'name': 'test_profile1',
+                             'about': 'About test profile1',
+                             'birthday': '2002-01-01',
+                             'user': test_user2}
+
+    def test_redirect_if_not_logged_in(self):
+        """Проверка перенаправления неавторизованного пользователя"""
+        response = self.client.get(reverse('profiles:add_profile'))
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith('/login/'))
+
+    def test_logged_in_uses_correct_template(self):
+        """Проверка отображения нужного template для авторизованного пользователя"""
+        self.client.login(username='test_user1', password='password')
+        response = self.client.get(reverse('profiles:add_profile'))
+
+        self.assertEqual(str(response.context['user']), 'test_user1')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'profiles/add_profile.html')
+
+    def test_create_user_profile_with_valid_date(self):
+        """Проверка создания профиля с корректными данными"""
+        self.client.login(username='test_user1', password='password')
+        response = self.client.post(reverse('profiles:add_profile'), data=self.valid_data)
+        profile_list = Profile.objects.all()
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('profiles:profiles'))
+        # Длина будет равна трем, так как один профиль создаются автоматически при регистрации пользователя
+        self.assertEqual(len(profile_list), 3)
+
+    def test_create_user_profile_with_invalid_birthday(self):
+        """Проверка создания профиля с некорректной датой"""
+        self.client.login(username='test_user1', password='password')
+        response = self.client.post(reverse('profiles:add_profile'), data=self.invalid_birthday)
+        profile_list = Profile.objects.all()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(profile_list), 2)
