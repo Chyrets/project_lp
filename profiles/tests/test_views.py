@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
+from profiles.models import Profile
+
 
 class LoginUserTest(TestCase):
     """Тест класса авторизации пользователя"""
@@ -59,16 +61,16 @@ class RegisterUserTest(TestCase):
     def test_register_user_correct_credential(self):
         """Проверка регистрации пользователя с правильными данными"""
         response = self.client.post(reverse('profiles:register'), data=self.credential)
-        users_list = User.objects.all()
+        user_list = User.objects.all()
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(users_list)
+        self.assertTrue(user_list)
 
     def test_register_user_different_password(self):
         """Проверка регистрации пользователя с разными паролями"""
         response = self.client.get(reverse('profiles:register'), data=self.crd_different_password)
-        users_list = User.objects.all()
+        user_list = User.objects.all()
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(users_list)
+        self.assertFalse(user_list)
 
     def test_register_user_incorrect_username(self):
         """Проверка регистрации пользователя с существующим username"""
@@ -77,3 +79,41 @@ class RegisterUserTest(TestCase):
         users_list = User.objects.all()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(users_list.count(), 1)
+
+
+class UserProfilesTest(TestCase):
+    """Тесты для класса просмотра профилей пользователя"""
+
+    def setUp(self):
+        test_user1 = User.objects.create_user(username='test_user1', password='password')
+        test_user1.save()
+
+        number_of_profiles = 10
+        for profile in range(number_of_profiles):
+            Profile.objects.create(user=test_user1)
+
+    def test_redirect_if_not_logged_in(self):
+        """Перенаправление если пользователь не авторизован"""
+        response = self.client.get(reverse('profiles:profiles'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_logged_in_uses_correct_template(self):
+        """Проверка отображения нужного template для авторизованного пользователя"""
+        # авторизация пользователя
+        self.client.login(username='test_user1', password='password')
+        response = self.client.get(reverse('profiles:profiles'))
+
+        # проверка, что пользователь авторизовался
+        self.assertEqual(str(response.context['user']), 'test_user1')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'profiles/profiles_list.html')
+
+    def test_profile_list_display(self):
+        """Отображение списка профилей авторизованного пользователя"""
+        self.client.login(username='test_user1', password='password')
+        response = self.client.get(reverse('profiles:profiles'))
+
+        profile_list = Profile.objects.filter(user=response.context['user'])
+
+        self.assertEqual(profile_list.count(), 11)
