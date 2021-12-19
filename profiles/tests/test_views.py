@@ -252,3 +252,43 @@ class EditUserProfileTest(TestCase):
         self.assertEqual(profile.name, 'test_profile1')
         self.assertEqual(profile.about, 'About test profile1')
         self.assertEqual(profile.birthday.strftime('%Y-%m-%d'), '2002-01-01')
+
+
+class DeleteUserProfileTest(TestCase):
+    """Тесты для класса удаления профиля"""
+
+    def setUp(self) -> None:
+        test_user1 = User.objects.create_user(username='test_user1', password='password')
+        test_user1.save()
+        user_data = {'name': 'test_profile1',
+                     'about': 'About test profile1',
+                     'birthday': '2002-01-01',
+                     'user': test_user1}
+        self.test_profile1 = Profile.objects.create(**user_data)
+
+    def test_redirect_if_not_logged_in(self):
+        """Проверка перенаправления неавторизованного пользователя"""
+        response = self.client.get(reverse('profiles:delete_profile', kwargs={'profile_slug': self.test_profile1.slug}))
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith('/login/'))
+
+    def test_logged_in_uses_correct_template(self):
+        """Проверка отображения нужного template для авторизованного пользователя"""
+        self.client.login(username='test_user1', password='password')
+        response = self.client.get(reverse('profiles:delete_profile', kwargs={'profile_slug': self.test_profile1.slug}))
+
+        self.assertEqual(str(response.context['user']), 'test_user1')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'profiles/delete_profile.html')
+
+    def test_delete_user_profile(self):
+        """Проверка удаления профиля пользователя"""
+        user = self.client.login(username='test_user1', password='password')
+        response = self.client.post(
+            reverse('profiles:delete_profile', kwargs={'profile_slug': self.test_profile1.slug}))
+        profile_list = Profile.objects.filter(user=user)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('profiles:profiles'))
+
+        self.assertEqual(len(profile_list), 1)
