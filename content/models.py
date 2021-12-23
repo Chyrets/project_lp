@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.urls import reverse
 from django.utils.text import slugify
 
 from profiles.models import Profile
@@ -53,3 +54,6 @@ class Post(models.Model):
     class Meta:
         verbose_name = "Статья"
         verbose_name_plural = "Статьи"
+
+    def get_absolute_url(self):
+        return reverse('content:post_detail', args=str(self.id))
