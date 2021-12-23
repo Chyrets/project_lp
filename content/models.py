@@ -6,7 +6,7 @@ from profiles.models import Profile
 
 
 def user_directory_path(instance, filename):
-    return f'user_{instance.user.username}/{filename}'
+    return f'user_{instance.author.name}/{filename}'
 
 
 class Tag(models.Model):

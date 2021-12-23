@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+    <div>
+        <ul class="list-group list-group-flush">
+            {% for profile_post in profile_posts_list %}
+                <li class="list-group-item mb-2">
+                    <div class="mb-1">
+                        <h4><a href="#" class="no_underline">{{ profile_post.title }}</a></h4>
+                    </div>
+                    <div class="mb-1">
+                        <a href="#" class="no_underline">{{ profile_post.author }}</a>
+                        / {{ profile_post.publication_date|naturaltime }}
+                        {% if profile_post.changed %}
+                            / ред. {{ profile_post.modification_date|naturaltime }}
+                        {% endif %}
+                    </div>
+                    <div class="mb-1">
+                        {% for tag in profile_post.tags.all %}
+                            <a href="#" class="no_underline">{{ tag.title }}</a>
+                        {% endfor %}
+                    </div>
+                    <div class="container d-flex align-items-center justify-content-center mb-1">>
+                        <img class="align-self-center" src="{{ profile_post.picture.url }}" width="80%">
+                    </div>
+                    <div class="mb-1">
+                        {{ profile_post.caption|truncatechars:200 }}
+                    </div>
+                    <div class="mb-1">
+                        {{ profile_post.views }} просмотров / 0 лайков / 0 дизлайков / 0 комментариев
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock content %}
