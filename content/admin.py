@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Tag
+from .models import Tag, Post
 
 
 class TagAdmin(admin.ModelAdmin):
@@ -10,4 +10,12 @@ class TagAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('title',)}
 
 
+class PostAdmin(admin.ModelAdmin):
+    """Настройка отображения модели Post в админке"""
+    list_display = ('id', 'title', 'author', 'publication_date', 'changed')
+    list_display_links = ('id', 'title')
+    readonly_fields = ('views', )
+
+
 admin.site.register(Tag, TagAdmin)
+admin.site.register(Post, PostAdmin)
