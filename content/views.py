@@ -63,7 +63,9 @@ class AddPostView(FormView):
         # Создаем недостающие теги из списка введенного пользователем
         tag_objs = []
         tag_form = form.cleaned_data.get('tags')
-        for tag in list(tag_form.split()):
+        tag_list = list(tag_form.replace(" ", "").split('#'))
+        tag_list = [tag for tag in tag_list if len(tag) > 0]
+        for tag in tag_list:
             t, created = Tag.objects.get_or_create(title=tag)
             tag_objs.append(t)
 
