@@ -67,6 +67,9 @@ class AddPostView(FormView):
         tag_list = [tag for tag in tag_list if len(tag) > 0]
         for tag in tag_list:
             t, created = Tag.objects.get_or_create(title=tag)
+            if created:
+                t.author = form.cleaned_data.get('author')
+                t.save(update_fields=['author'])
             tag_objs.append(t)
 
         instance.save()
