@@ -1,8 +1,7 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views import View
 from django.views.generic import TemplateView, FormView
 
 from content.forms import AddPostForm
@@ -45,11 +44,12 @@ class PostDetailView(TemplateView):
         return context
 
 
-class AddPostView(FormView):
+class AddPostView(LoginRequiredMixin, FormView):
     """Страница для добавления нового поста"""
     form_class = AddPostForm
     template_name = 'content/add_post.html'
     success_url = reverse_lazy('profiles:home')
+    login_url = reverse_lazy('profiles:login')
 
     def get_form_kwargs(self):
         kwargs = super(AddPostView, self).get_form_kwargs()

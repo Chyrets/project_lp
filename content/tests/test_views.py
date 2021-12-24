@@ -78,3 +78,59 @@ class PostDetailTest(TestCase):
         response = self.client.get(reverse('content:post_detail', kwargs={'post_id': self.post1.id}))
 
         self.assertEqual(response.context['post'].views, 1)
+
+
+class AddPostViewTest(TestCase):
+    """Тесты для класса добавления нового профиля"""
+
+    def setUp(self) -> None:
+        test_user1 = User.objects.create_user(username='test_user1', password='password')
+        test_user1.save()
+        self.profile1 = Profile.objects.first()
+        self.valid_data = {
+            'title': 'test post1',
+            'caption': 'About test post1',
+            'tags': '#tag1 #tag2',
+            'author': self.profile1.pk
+        }
+        self.invalid_title = {
+            'title': '',
+            'caption': 'About test post1',
+            'tags': '#tag1 #tag2',
+            'author': self.profile1.pk
+        }
+
+    def test_redirect_if_not_logged_in(self):
+        """Проверка перенаправления неавторизованного пользователя"""
+        response = self.client.get(reverse('content:add_post'))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith('/login/'))
+
+    def test_logged_in_uses_correct_template(self):
+        """Проверка отображения нужного шаблона для авторизованного пользователя"""
+        self.client.login(username='test_user1', password='password')
+        response = self.client.get(reverse('content:add_post'))
+
+        self.assertEqual(str(response.context['user']), 'test_user1')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'content/add_post.html')
+
+    def test_add_post_with_valid_data(self):
+        """Проверка добавления поста с правильными данными"""
+        self.client.login(username='test_user1', password='password')
+        response = self.client.post(reverse('content:add_post'), data=self.valid_data)
+        post_list = Post.objects.all()
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('profiles:home'))
+        self.assertEqual(len(post_list), 1)
+
+    def test_add_post_with_invalid_title(self):
+        """Проверка добавления поста с пустым полем заголовка"""
+        self.client.login(username='test_user1', password='password')
+        response = self.client.post(reverse('content:add_post'), data=self.invalid_title)
+        post_list = Post.objects.all()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(post_list), 0)
