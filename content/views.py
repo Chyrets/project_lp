@@ -13,7 +13,7 @@ class ProfilePostsView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         try:
-            author = Profile.objects.get(name=profile_slug)
+            author = Profile.objects.get(slug=profile_slug)
         except Profile.DoesNotExist:
             raise Http404
 

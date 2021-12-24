@@ -7,7 +7,8 @@
             {% for profile_post in profile_posts_list %}
                 <li class="list-group-item mb-4">
                     <div class="mb-3">
-                        <h4><a href="{{ profile_post.get_absolute_url }}" class="no_underline">{{ profile_post.title }}</a></h4>
+                        <h4><a href="{{ profile_post.get_absolute_url }}"
+                               class="no_underline">{{ profile_post.title }}</a></h4>
                     </div>
                     <div class="mb-3">
                         <a href="#" class="no_underline">{{ profile_post.author }}</a>
@@ -21,9 +22,11 @@
                             <a href="#" class="no_underline">{{ tag.title }}</a>
                         {% endfor %}
                     </div>
-                    <div class="container d-flex align-items-center justify-content-center mb-3">>
-                        <img class="align-self-center" src="{{ profile_post.picture.url }}" width="80%">
-                    </div>
+                    {% if profile.picture %}
+                        <div class="container d-flex align-items-center justify-content-center mb-3">>
+                            <img class="align-self-center" src="{{ profile_post.picture.url }}" width="80%">
+                        </div>
+                    {% endif %}
                     <div class="mb-3">
                         {{ profile_post.caption|truncatechars:200 }}
                     </div>
