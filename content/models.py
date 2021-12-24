@@ -56,4 +56,4 @@ class Post(models.Model):
         verbose_name_plural = "Статьи"
 
     def get_absolute_url(self):
-        return reverse('content:post_detail', args=str(self.id))
+        return reverse('content:post_detail', kwargs={'post_id': self.id})

@@ -1,7 +1,12 @@
+from django.contrib.auth.models import User
 from django.http import Http404
-from django.views.generic import TemplateView
+from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
+from django.views import View
+from django.views.generic import TemplateView, FormView
 
-from content.models import Post
+from content.forms import AddPostForm
+from content.models import Post, Tag
 from profiles.models import Profile
 
 
@@ -38,3 +43,32 @@ class PostDetailView(TemplateView):
             raise Http404
 
         return context
+
+
+class AddPostView(FormView):
+    """Страница для добавления нового поста"""
+    form_class = AddPostForm
+    template_name = 'content/add_post.html'
+    success_url = reverse_lazy('profiles:home')
+
+    def get_form_kwargs(self):
+        kwargs = super(AddPostView, self).get_form_kwargs()
+        # Добавляем аргумент user для конструктора класса AddPostForm
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
+    def form_valid(self, form):
+        instance = form.save(commit=False)
+
+        # Создаем недостающие теги из списка введенного пользователем
+        tag_objs = []
+        tag_form = form.cleaned_data.get('tags')
+        for tag in list(tag_form.split()):
+            t, created = Tag.objects.get_or_create(title=tag)
+            tag_objs.append(t)
+
+        instance.save()
+        # Добавляем теги к созданному посту
+        instance.tags.set(tag_objs)
+
+        return redirect(self.get_success_url())
