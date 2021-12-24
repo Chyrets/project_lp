@@ -72,3 +72,9 @@ class PostDetailTest(TestCase):
         response = self.client.get(reverse('content:post_detail', kwargs={'post_id': 0}))
 
         self.assertEqual(response.status_code, 404)
+
+    def test_add_one_view_when_page_load(self):
+        """Проверка счетчика просмотров, при загрузке страницы он должен увеличиться на один"""
+        response = self.client.get(reverse('content:post_detail', kwargs={'post_id': self.post1.id}))
+
+        self.assertEqual(response.context['post'].views, 1)

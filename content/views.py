@@ -30,7 +30,10 @@ class PostDetailView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         try:
-            context['post'] = Post.objects.get(id=int(post_id), archived=False)
+            post = Post.objects.get(id=int(post_id), archived=False)
+            post.views += 1
+            post.save(update_fields=['views'])
+            context['post'] = post
         except Post.DoesNotExist:
             raise Http404
 
