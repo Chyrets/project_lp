@@ -70,8 +70,8 @@ class AddPostView(LoginRequiredMixin, FormView):
 
         return redirect(self.get_success_url())
 
-    @classmethod
-    def __add_new_tag(cls, tag_form: str, author: str) -> list:
+    @staticmethod
+    def __add_new_tag(tag_form: str, author: str) -> list:
         """Создание новых тегов из строки введенной пользователем"""
         tag_objs = []
         tag_list = list(tag_form.replace(" ", "").split('#'))
