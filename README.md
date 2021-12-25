@@ -4,5 +4,7 @@
 Для установки проекта у вас должен быть установлен poetry
 
 Выполните в консоли:
-  1. Клонирование репозитория: ```https://github.com/Chyrets/project_lp.git```
-  2. Установка зависимостей: ```poetry install```
+  1. Клонирование репозитория: 
+  ```git clone https://github.com/Chyrets/project_lp.git```
+  2. Установка зависимостей: 
+  ```poetry install```
