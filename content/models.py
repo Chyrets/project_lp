@@ -7,6 +7,7 @@ from profiles.models import Profile
 
 
 def user_directory_path(instance, filename):
+    """Задание пути для размещения фотографии поста"""
     return f'user_{instance.author.name}/{filename}'
 
 
