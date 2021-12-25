@@ -34,7 +34,7 @@ class PostDetailView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         try:
-            post = Post.objects.get(id=int(post_id), archived=False)
+            post = Post.objects.get(id=post_id, archived=False)
             post.views += 1
             post.save(update_fields=['views'])
             context['post'] = post
@@ -60,20 +60,28 @@ class AddPostView(LoginRequiredMixin, FormView):
     def form_valid(self, form):
         instance = form.save(commit=False)
 
-        # Создаем недостающие теги из списка введенного пользователем
-        tag_objs = []
         tag_form = form.cleaned_data.get('tags')
-        tag_list = list(tag_form.replace(" ", "").split('#'))
-        tag_list = [tag for tag in tag_list if len(tag) > 0]
-        for tag in tag_list:
-            t, created = Tag.objects.get_or_create(title=tag)
-            if created:
-                t.author = form.cleaned_data.get('author')
-                t.save(update_fields=['author'])
-            tag_objs.append(t)
+        author = form.cleaned_data.get('author')
+        tag_objs = self.__add_new_tag(tag_form, author)
 
         instance.save()
         # Добавляем теги к созданному посту
         instance.tags.set(tag_objs)
 
         return redirect(self.get_success_url())
+
+    @classmethod
+    def __add_new_tag(cls, tag_form: str, author: str) -> list:
+        """Создание новых тегов из строки введенной пользователем"""
+        tag_objs = []
+        tag_list = list(tag_form.replace(" ", "").split('#'))
+        tag_list = [tag for tag in tag_list if len(tag) > 0]
+
+        for tag in tag_list:
+            t, created = Tag.objects.get_or_create(title=tag)
+            if created:
+                t.author = author
+                t.save(update_fields=['author'])
+            tag_objs.append(t)
+
+        return tag_objs
