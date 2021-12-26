@@ -1,16 +1,60 @@
 from django import forms
+from django.core.exceptions import ValidationError
 
 from content.models import Post
 from profiles.models import Profile
 
 
-class AddPostForm(forms.ModelForm):
-    """Форма добавления нового поста"""
+class TagWidgetMixin:
+    def format_value(self, value):
+        if value:
+            value = ' '.join([f'#{tag.title}' for tag in value])
+        return super().format_value(value)
 
-    tags = forms.CharField(label=Post._meta.get_field('tags').verbose_name)
+
+class TagWidget(TagWidgetMixin, forms.TextInput):
+    pass
+
+
+class TagField(forms.CharField):
+    """Индивидуальное поле для поля tags модели Post"""
+    widget = TagWidget
+
+    def clean(self, value):
+        value = super().clean(value)
+        try:
+            return value
+        except ValueError:
+            raise ValidationError(
+                "Пожалуйста введите названия тегов в одну строку, каждый тег должен начинаться со знака #")
+
+    def has_changed(self, initial_value, data_value):
+        if self.disabled:
+            return False
+
+        try:
+            data_value = self.clean(data_value)
+        except forms.ValidationError:
+            pass
+
+        if not data_value:
+            data_value = []
+        if not initial_value:
+            initial_value = []
+
+        initial_value = [tag.name for tag in initial_value]
+        initial_value.sort()
+
+        return initial_value != data_value
+
+
+class AddEditPostForm(forms.ModelForm):
+    """Форма добавления, редактирования поста"""
+
+    tags = TagField(label=Post._meta.get_field('tags').verbose_name)
 
     def __init__(self, user, *args, **kwargs):
-        super(AddPostForm, self).__init__(*args, **kwargs)
+        super(AddEditPostForm, self).__init__(*args, **kwargs)
         self.fields['title'].widget.attrs.update({'class': 'form-control'})
         self.fields['caption'].widget.attrs.update({'class': 'form-control'})
         self.fields['picture'].widget.attrs.update({'class': 'form-control'})

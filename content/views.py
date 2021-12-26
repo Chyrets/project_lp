@@ -4,8 +4,9 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, FormView
 
-from content.forms import AddPostForm
-from content.models import Post, Tag
+from content.forms import AddEditPostForm
+from content.models import Post
+from content.services.view_services import add_new_tag
 from profiles.models import Profile
 
 
@@ -46,8 +47,8 @@ class PostDetailView(TemplateView):
 
 class AddPostView(LoginRequiredMixin, FormView):
     """Страница для добавления нового поста"""
-    form_class = AddPostForm
-    template_name = 'content/add_post.html'
+    form_class = AddEditPostForm
+    template_name = 'content/add_or_edit_post.html'
     success_url = reverse_lazy('profiles:home')
     login_url = reverse_lazy('profiles:login')
 
@@ -60,9 +61,12 @@ class AddPostView(LoginRequiredMixin, FormView):
     def form_valid(self, form):
         instance = form.save(commit=False)
 
+        # получение списка тегов и автора
         tag_form = form.cleaned_data.get('tags')
         author = form.cleaned_data.get('author')
-        tag_objs = self.__add_new_tag(tag_form, author)
+
+        # Добавление новых тегов в бд и создание списка тегов для поста
+        tag_objs = add_new_tag(tag_form, author)
 
         instance.save()
         # Добавляем теги к созданному посту
@@ -70,18 +74,46 @@ class AddPostView(LoginRequiredMixin, FormView):
 
         return redirect(self.get_success_url())
 
-    @staticmethod
-    def __add_new_tag(tag_form: str, author: str) -> list:
-        """Создание новых тегов из строки введенной пользователем"""
-        tag_objs = []
-        tag_list = list(tag_form.replace(" ", "").split('#'))
-        tag_list = [tag for tag in tag_list if len(tag) > 0]
 
-        for tag in tag_list:
-            t, created = Tag.objects.get_or_create(title=tag)
-            if created:
-                t.author = author
-                t.save(update_fields=['author'])
-            tag_objs.append(t)
+class EditPostView(LoginRequiredMixin, FormView):
+    """Страница редактирования поста"""
+    form_class = AddEditPostForm
+    template_name = 'content/add_or_edit_post.html'
+    login_url = reverse_lazy('profiles:login')
+    success_url = reverse_lazy('profiles:home')
 
-        return tag_objs
+    def get_form_kwargs(self):
+        kwargs = super(EditPostView, self).get_form_kwargs()
+        # Добавляем аргумент user для конструктора класса AddPostForm
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        post = Post.objects.get(pk=self.kwargs['post_id'])
+
+        context['form'] = self.form_class(instance=post, user=self.request.user)
+        return context
+
+    def form_valid(self, form):
+        post_id = self.kwargs['post_id']
+        user = self.request.user
+        post = Post.objects.get(pk=post_id, author__user=user)
+
+        tag_form = form.cleaned_data.get('tags')
+        author = form.cleaned_data.get('author')
+
+        tag_objs = add_new_tag(tag_form, author)
+
+        # Добавление тегов к посту
+        post.tags.set(tag_objs)
+        # обновление полей модели
+        post.title = form.cleaned_data['title']
+        post.caption = form.cleaned_data['caption']
+        post.picture = form.cleaned_data['picture']
+        post.author = form.cleaned_data['author']
+        post.archived = form.cleaned_data['archived']
+        post.save(update_fields=['title', 'caption', 'picture', 'author', 'archived'])
+
+        return redirect(self.get_success_url())

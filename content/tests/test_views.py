@@ -114,7 +114,7 @@ class AddPostViewTest(TestCase):
 
         self.assertEqual(str(response.context['user']), 'test_user1')
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'content/add_post.html')
+        self.assertTemplateUsed(response, 'content/add_or_edit_post.html')
 
     def test_add_post_with_valid_data(self):
         """Проверка добавления поста с правильными данными"""

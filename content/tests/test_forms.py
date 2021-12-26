@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from ..forms import AddPostForm
+from ..forms import AddEditPostForm
 
 
 class AddPostFormTest(TestCase):
@@ -12,7 +12,7 @@ class AddPostFormTest(TestCase):
 
     def test_form_fields_label_text(self):
         """Проверка значения label полей формы"""
-        form = AddPostForm(self.test_user)
+        form = AddEditPostForm(self.test_user)
 
         self.assertEqual(form.fields['title'].label, 'Заголовок')
         self.assertEqual(form.fields['caption'].label, 'Содержание')
