@@ -59,10 +59,14 @@ class AddEditPostForm(forms.ModelForm):
         self.fields['caption'].widget.attrs.update({'class': 'form-control'})
         self.fields['picture'].widget.attrs.update({'class': 'form-control'})
         self.fields['archived'].widget.attrs.update({'class': 'form-check-input'})
+
+        # Настройка поля tags
         self.fields['tags'].widget.attrs.update({
             'class': 'form-control',
             'placeholder': 'Каждый тег должен начинаться со знака #. (#тег1 #тег2)'
         })
+        self.fields['tags'].required = False
+
         self.fields['author'].widget.attrs.update({'class': 'form-control'})
         self.fields['author'].queryset = Profile.objects.filter(user=user)
 
