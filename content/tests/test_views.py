@@ -134,3 +134,72 @@ class AddPostViewTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(post_list), 0)
+
+
+class EditPostViewTest(TestCase):
+    """Тесты для класса представления редактирования поста"""
+
+    def setUp(self) -> None:
+        test_user1 = User.objects.create_user(username='test_user1', password='password')
+        test_user1.save()
+        test_user2 = User.objects.create_user(username='test_user2', password='password')
+        test_user2.save()
+        profile = Profile.objects.first()
+        self.test_post = Post.objects.create(
+            title='test post1',
+            caption='About test post1 by test_user1',
+            author=profile
+        )
+        self.valid_data = {
+            'title': 'test post1 dt',
+            'caption': 'About test post1 dt',
+            'tags': '#test_tag1',
+            'author': profile.pk,
+            'archived': True
+        }
+        self.invalid_data = {
+            'title': '',
+            'caption': 'About test post1 dt',
+            'tags': '#test_tag1',
+            'author': profile.pk,
+            'archived': True
+        }
+
+
+    def test_redirect_if_not_logged_in(self):
+        """Проверка перенаправления неавторизованного пользователя"""
+        response = self.client.get(reverse('content:edit_post', kwargs={'post_id': self.test_post.pk}))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith('/login/'))
+
+    def test_logged_in_uses_correct_template(self):
+        """Проверка отображения нужного шаблона для авторизованного пользователя"""
+        self.client.login(username='test_user1', password='password')
+        response = self.client.get(reverse('content:edit_post', kwargs={'post_id': self.test_post.pk}))
+
+        self.assertEqual(str(response.context['user']), 'test_user1')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'content/add_or_edit_post.html')
+
+    def test_current_post_author(self):
+        """Проверка того, что только автор поста может изменить его"""
+        self.client.login(username='test_user2', password='password')
+        response = self.client.get(reverse('content:edit_post', kwargs={'post_id': self.test_post.pk}))
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_edit_post_with_valid_data(self):
+        """Проверка метода form_valid"""
+        self.client.login(username='test_user1', password='password')
+        response = self.client.post(reverse('content:edit_post', kwargs={'post_id': self.test_post.pk}),
+                                    data=self.valid_data)
+        post = Post.objects.first()
+        tag_list = post.tags.all()
+        tags = ' '.join([f'#{tag.title}' for tag in tag_list])
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(post.title, 'test post1 dt')
+        self.assertEqual(post.caption, 'About test post1 dt')
+        self.assertEqual(tags, '#test_tag1')
+        self.assertEqual(post.archived, True)
