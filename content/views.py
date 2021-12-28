@@ -90,8 +90,12 @@ class EditPostView(LoginRequiredMixin, FormView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user = self.request.user
 
-        post = Post.objects.get(pk=self.kwargs['post_id'])
+        try:
+            post = Post.objects.get(pk=self.kwargs['post_id'], author__user=user)
+        except Post.DoesNotExist:
+            raise Http404
 
         context['form'] = self.form_class(instance=post, user=self.request.user)
         return context
