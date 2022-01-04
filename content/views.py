@@ -2,7 +2,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView, FormView
+from django.views import View
+from django.views.generic import TemplateView, FormView, DeleteView
 
 from content.forms import AddEditPostForm
 from content.models import Post
@@ -121,3 +122,20 @@ class EditPostView(LoginRequiredMixin, FormView):
         post.save(update_fields=['title', 'caption', 'picture', 'author', 'archived'])
 
         return redirect(self.get_success_url())
+
+
+class DeletePostView(LoginRequiredMixin, DeleteView):
+    """Страница для подтверждения удаления поста"""
+    model = Post
+    template_name = 'content/delete_post.html'
+    success_url = reverse_lazy('profiles:home')
+    login_url = reverse_lazy('profiles:login')
+
+    def get_object(self, queryset=None):
+        """Проверка того, что автор поста текущий пользователь"""
+        post = super(DeletePostView, self).get_object()
+
+        if not post.author.user == self.request.user:
+            raise Http404
+
+        return post

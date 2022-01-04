@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <h4>{{ post.title }}</h4>
+        </div>
+        <div class="mb-3">
+            {% for tag in post.tags.all %}
+                <a href="#" class="no_underline">{{ tag.title }}</a>
+            {% endfor %}
+        </div>
+        {% if post.picture %}
+            <div class="container d-flex align-items-center justify-content-center mb-3">
+                <img class="align-self-center" src="{{ post.picture.url }}" width="40%">
+            </div>
+        {% endif %}
+        <div class="mb-3">
+            {{ post.caption|truncatechars:200 }}
+        </div>
+        <p class="text-danger">Вы уверены, что хотите удалить эту статью?</p>
+        <a href="{{ post.get_absolute_url }}" class="btn btn-primary">Отмена</a>
+        <button type="submit" class="btn btn-danger">Удалить</button>
+    </form>
+{% endblock content %}

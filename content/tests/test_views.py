@@ -165,7 +165,6 @@ class EditPostViewTest(TestCase):
             'archived': True
         }
 
-
     def test_redirect_if_not_logged_in(self):
         """Проверка перенаправления неавторизованного пользователя"""
         response = self.client.get(reverse('content:edit_post', kwargs={'post_id': self.test_post.pk}))

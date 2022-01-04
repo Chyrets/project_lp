@@ -28,4 +28,10 @@
     <div class="mb-3">
         {{ post.views }} просмотров / 0 лайков / 0 дизлайков / 0 комментариев
     </div>
+    {% if post.author.user == request.user %}
+        <div class="'mb-3">
+            <a href="{% url 'content:edit_post' post.pk %}" class="no_underline btn btn-success">Редактировать</a>
+            <a href="{% url 'content:delete_post' post.pk %}" class="no_underline btn btn-danger">Удалить</a>
+        </div>
+    {% endif %}
 {% endblock content %}
