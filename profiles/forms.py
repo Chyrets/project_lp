@@ -27,9 +27,12 @@ class UserProfileForm(ModelForm):
         super(UserProfileForm, self).__init__(*args, **kwargs)
 
         for name, field in self.fields.items():
-            field.widget.attrs.update({'class': 'form-control'})
+            if name != "used":
+                field.widget.attrs.update({'class': 'form-control'})
+            else:
+                field.widget.attrs.update({'class': "form-check-input"})
 
     class Meta:
         model = Profile
-        fields = ['name', 'about', 'birthday']
+        fields = ['name', 'about', 'birthday', 'used']
 
