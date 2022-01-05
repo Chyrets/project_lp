@@ -1,4 +1,6 @@
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
@@ -49,6 +51,8 @@ class Post(models.Model):
     tags = models.ManyToManyField(Tag, verbose_name="Теги", related_name='tags', blank=True)
     author = models.ForeignKey(Profile, verbose_name="Автор", on_delete=models.CASCADE)
 
+    reaction = GenericRelation("PostReaction", related_query_name="post", related_name="posts")
+
     def __str__(self):
         return f'{self.title} by {self.author}'
 
@@ -58,3 +62,29 @@ class Post(models.Model):
 
     def get_absolute_url(self):
         return reverse('content:post_detail', kwargs={'post_id': self.id})
+
+
+class PostReaction(models.Model):
+    """Модель лайков/дизлайков для поста"""
+    REACTION_CHOICE = (
+        (1, 'Like'),
+        (2, 'Dislike')
+    )
+
+    profile = models.ForeignKey(
+        Profile,
+        verbose_name="Пользователь",
+        on_delete=models.CASCADE,
+        related_name='post_reaction')
+    reaction = models.SmallIntegerField("Реакция пользователя", choices=REACTION_CHOICE, default=1)
+
+    content_type = models.ForeignKey(ContentType, verbose_name="Объект", on_delete=models.CASCADE)
+    object_id = models.IntegerField("pk объекта", db_index=True)
+    product = GenericForeignKey("content_type", "object_id")
+
+    def __str__(self):
+        return f'{self.REACTION_CHOICE[self.reaction-1][1]} for: {self.content_type} from {self.profile}'
+
+    class Meta:
+        verbose_name = "Реакция"
+        verbose_name_plural = "Реакции"
