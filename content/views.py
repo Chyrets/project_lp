@@ -1,12 +1,13 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import Http404
+from django.contrib.contenttypes.models import ContentType
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import TemplateView, FormView, DeleteView
 
 from content.forms import AddEditPostForm
-from content.models import Post
+from content.models import Post, PostReaction
 from content.services.view_services import add_new_tag
 from profiles.models import Profile
 
@@ -37,9 +38,16 @@ class PostDetailView(TemplateView):
 
         try:
             post = Post.objects.get(id=post_id, archived=False)
+            reaction = PostReaction.objects.filter(post=post)
+            likes = reaction.filter(reaction=1).count()
+            dislikes = reaction.filter(reaction=2).count()
+
             post.views += 1
             post.save(update_fields=['views'])
+
             context['post'] = post
+            context['likes'] = likes
+            context['dislikes'] = dislikes
         except Post.DoesNotExist:
             raise Http404
 
@@ -139,3 +147,47 @@ class DeletePostView(LoginRequiredMixin, DeleteView):
             raise Http404
 
         return post
+
+
+class PostReactionView(LoginRequiredMixin, View):
+    """Функционал для кнопок лайков/дизлайков поста"""
+    login_url = reverse_lazy('profiles:login')
+    
+    def get(self, request, post_id, reaction):
+        user = request.user
+        ct_post = ContentType.objects.get_for_model(Post)
+
+        # Получаем основной профиль пользователя
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
+        # Достаем из бд пост с текущей страницы
+        try:
+            post = Post.objects.get(pk=post_id)
+        except Post.DoesNotExist:
+            raise Http404
+
+        # Достаем из бд реакцию данного профиля на пост, если ее нет, то возвращаем None
+        try:
+            post_reaction = PostReaction.objects.get(profile=profile, content_type=ct_post, object_id=post.pk)
+        except PostReaction.DoesNotExist:
+            post_reaction = None
+
+        # Если нет реакции, то создаем новую исходя из присланных данных
+        if not post_reaction:
+            if reaction == 1:
+                PostReaction.objects.create(profile=profile, content_type=ct_post, object_id=post.pk, reaction=reaction)
+            else:
+                PostReaction.objects.create(profile=profile, content_type=ct_post, object_id=post.pk, reaction=reaction)
+        # Если есть реакция и пользователь хочет ее изменить
+        elif post_reaction and post_reaction.reaction != reaction:
+            PostReaction.objects.filter(
+                profile=profile, content_type=ct_post, object_id=post.pk).update(reaction=reaction)
+        # Если Есть реакция и пользователь хочет ее убрать
+        else:
+            PostReaction.objects.get(
+                profile=profile, content_type=ct_post, object_id=post.pk, reaction=reaction).delete()
+
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

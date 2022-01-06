@@ -26,7 +26,14 @@
         {{ post.caption }}
     </div>
     <div class="mb-3">
-        {{ post.views }} просмотров / 0 лайков / 0 дизлайков / 0 комментариев
+        {{ post.views }} просмотров /
+        <a class="no_underline link-primary" href="{% url 'content:post_reaction' post_id=post.pk reaction=1 %}">
+            {{ likes }} лайков
+        </a> /
+        <a class="no_underline link-danger" href="{% url 'content:post_reaction' post_id=post.pk reaction=2 %}">
+            {{ dislikes }} дизлайков
+        </a> /
+        0 комментариев
     </div>
     {% if post.author.user == request.user %}
         <div class="'mb-3">
