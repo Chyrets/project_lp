@@ -8,7 +8,7 @@ from django.views.generic import TemplateView, FormView, DeleteView
 
 from content.forms import AddEditPostForm
 from content.models import Post, PostReaction
-from content.services.view_services import add_new_tag
+from content.services.view_services import add_new_tag, add_remove_reaction
 from profiles.models import Profile
 
 
@@ -169,25 +169,7 @@ class PostReactionView(LoginRequiredMixin, View):
         except Post.DoesNotExist:
             raise Http404
 
-        # Достаем из бд реакцию данного профиля на пост, если ее нет, то возвращаем None
-        try:
-            post_reaction = PostReaction.objects.get(profile=profile, content_type=ct_post, object_id=post.pk)
-        except PostReaction.DoesNotExist:
-            post_reaction = None
-
-        # Если нет реакции, то создаем новую исходя из присланных данных
-        if not post_reaction:
-            if reaction == 1:
-                PostReaction.objects.create(profile=profile, content_type=ct_post, object_id=post.pk, reaction=reaction)
-            else:
-                PostReaction.objects.create(profile=profile, content_type=ct_post, object_id=post.pk, reaction=reaction)
-        # Если есть реакция и пользователь хочет ее изменить
-        elif post_reaction and post_reaction.reaction != reaction:
-            PostReaction.objects.filter(
-                profile=profile, content_type=ct_post, object_id=post.pk).update(reaction=reaction)
-        # Если Есть реакция и пользователь хочет ее убрать
-        else:
-            PostReaction.objects.get(
-                profile=profile, content_type=ct_post, object_id=post.pk, reaction=reaction).delete()
+        # Обрабатываем реакцию пользователя
+        add_remove_reaction(profile, ct_post, post.pk, reaction)
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
