@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
 
+    'mptt',
+
     'profiles.apps.ProfilesConfig',
     'content.apps.ContentConfig'
 ]

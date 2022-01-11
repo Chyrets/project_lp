@@ -4,6 +4,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
+from mptt.models import MPTTModel
+from mptt.fields import TreeForeignKey
 
 from profiles.models import Profile
 
@@ -88,3 +90,27 @@ class PostReaction(models.Model):
     class Meta:
         verbose_name = "Реакция"
         verbose_name_plural = "Реакции"
+
+
+class Comment(MPTTModel):
+    """Модель комментария поста"""
+    text = models.TextField("Содержание", max_length=2000)
+    publication_date = models.DateTimeField('Дата публикации', auto_now_add=True)
+    changed = models.BooleanField("Изменен", default=False)
+    modification_date = models.DateTimeField('Дата изменения', auto_now=True, null=True, blank=True)
+    post = models.ForeignKey(Post, related_name="comments", on_delete=models.CASCADE)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    parent = TreeForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="children"
+    )
+
+    def __str__(self):
+        return f"{self.profile} - {self.post}"
+
+    class Meta:
+        verbose_name = "Комментарий"
+        verbose_name_plural = "Комментарии"
