@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
-from content.models import Post
+from content.models import Post, Comment
 from profiles.models import Profile
 
 
@@ -73,3 +73,15 @@ class AddEditPostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ('title', 'caption', 'tags', 'picture', 'author', 'archived')
+
+
+class AddCommentForm(forms.ModelForm):
+    """Форма добавления комментария"""
+
+    class Meta:
+        model = Comment
+        fields = ('text',)
+
+    def __init__(self, *args, **kwargs):
+        super(AddCommentForm, self).__init__(*args, **kwargs)
+        self.fields['text'].widget.attrs.update({'class': 'form-control'})
