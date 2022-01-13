@@ -1,12 +1,13 @@
 {% extends 'base.html' %}
 {% load humanize %}
+{% load mptt_tags %}
 
 {% block content %}
     <div class="mb-3">
         <h4>{{ post.title }}</h4>
     </div>
     <div class="mb-3">
-        <a href="#" class="no_underline">{{ post.author }}</a>
+        <a href="{% url 'content:profile_posts_list' post.author.slug %}" class="no_underline">{{ post.author }}</a>
         / {{ post.publication_date|naturaltime }}
         {% if post.changed %}
             / ред. {{ post.modification_date|naturaltime }}
@@ -23,7 +24,7 @@
         </div>
     {% endif %}
     <div class="mb-3">
-        {{ post.caption }}
+        {{ post.caption|linebreaks }}
     </div>
     <div class="mb-3">
         {{ post.views }} просмотров /
@@ -33,7 +34,28 @@
         <a class="no_underline link-danger" href="{% url 'content:post_reaction' post_id=post.pk reaction=2 %}">
             {{ dislikes }} дизлайков
         </a> /
-        0 комментариев
+        {{ comments.count }} комментариев
+    </div>
+    <div>
+        <ul class="list-group list-group-flush">
+            {% recursetree comments %}
+                <li class="list-group-item">
+                    <a class="no_underline link-primary"
+                       href="{% url 'content:profile_posts_list' node.profile.slug %}">{{ node.profile }}
+                    </a>
+                    <small>{{ node.publication_date|naturaltime }}</small>
+                    {% if node.changed %}
+                        <small> / Изм. {{ node.modification_date|naturaltime }}</small>
+                    {% endif %}
+                    <p>{{ node.text }}</p>
+                    {% if not node.is_leaf_comment %}
+                        <ul class="list-group list-group-flush line">
+                            {{ children }}
+                        </ul>
+                    {% endif %}
+                </li>
+            {% endrecursetree %}
+        </ul>
     </div>
     {% if post.author.user == request.user %}
         <div class="'mb-3">

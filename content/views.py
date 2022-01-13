@@ -7,7 +7,7 @@ from django.views import View
 from django.views.generic import TemplateView, FormView, DeleteView
 
 from content.forms import AddEditPostForm
-from content.models import Post, PostReaction
+from content.models import Post, PostReaction, Comment
 from content.services.view_services import add_new_tag, add_remove_reaction
 from profiles.models import Profile
 
@@ -24,7 +24,7 @@ class ProfilePostsView(TemplateView):
         except Profile.DoesNotExist:
             raise Http404
 
-        context['profile_posts_list'] = Post.objects.filter(author=author, archived=False)
+        context['profile_posts_list'] = Post.objects.filter(author=author, archived=False).prefetch_related('comments')
 
         return context
 
@@ -39,6 +39,7 @@ class PostDetailView(TemplateView):
         try:
             post = Post.objects.get(id=post_id, archived=False)
             reaction = PostReaction.objects.filter(post=post)
+            comments = Comment.objects.filter(post=post)
             likes = reaction.filter(reaction=1).count()
             dislikes = reaction.filter(reaction=2).count()
 
@@ -48,6 +49,7 @@ class PostDetailView(TemplateView):
             context['post'] = post
             context['likes'] = likes
             context['dislikes'] = dislikes
+            context['comments'] = comments
         except Post.DoesNotExist:
             raise Http404
 

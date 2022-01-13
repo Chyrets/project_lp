@@ -22,7 +22,7 @@
                             <a href="#" class="no_underline">{{ tag.title }}</a>
                         {% endfor %}
                     </div>
-                    {% if profile.picture %}
+                    {% if profile_post.picture %}
                         <div class="container d-flex align-items-center justify-content-center mb-3">>
                             <img class="align-self-center" src="{{ profile_post.picture.url }}" width="80%">
                         </div>
@@ -31,7 +31,10 @@
                         {{ profile_post.caption|truncatechars:200 }}
                     </div>
                     <div class="mb-3">
-                        {{ profile_post.views }} просмотров / 0 лайков / 0 дизлайков / 0 комментариев
+                        {{ profile_post.views }} просмотров /
+                        0 лайков /
+                        0 дизлайков /
+                        {{ profile_post.comments.count }} комментариев
                     </div>
                 </li>
             {% endfor %}
