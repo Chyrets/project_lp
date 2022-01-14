@@ -19,7 +19,7 @@
         {% endfor %}
     </div>
     {% if post.picture %}
-        <div class="container d-flex align-items-center justify-content-center mb-3">>
+        <div class="container d-flex align-items-center justify-content-center mb-3">
             <img class="align-self-center" src="{{ post.picture.url }}" width="80%">
         </div>
     {% endif %}
@@ -37,8 +37,9 @@
         {{ comments.count }} комментариев
     </div>
     <div>
-        <form action="{% url 'content:add_comment' post.pk %}" method="POST">
+        <form action="{% url 'content:add_comment' post.pk %}" method="post" id="formComment">
             {% csrf_token %}
+            <input type="hidden" name="parent" id="contact_parent" value="">
             <p>Добавить комментарий:</p>
             {% for field in form %}
                 {{ field }}
@@ -60,6 +61,7 @@
                         <small> / Изм. {{ node.modification_date|naturaltime }}</small>
                     {% endif %}
                     <p>{{ node.text }}</p>
+                    <a class="btn btn-primary btn-sm mb-2" href="#formComment" onclick="addComment('{{ node.profile }}', '{{ node.id }}')">Ответить</a>
                     {% if not node.is_leaf_comment %}
                         <ul class="list-group list-group-flush line">
                             {{ children }}
@@ -75,4 +77,11 @@
             <a href="{% url 'content:delete_post' post.pk %}" class="no_underline btn btn-danger">Удалить</a>
         </div>
     {% endif %}
+
+    <script>
+        function addComment(name, id) {
+            document.getElementById("contact_parent").value = id;
+            document.getElementById("id_text").innerText = `${name}, `
+        }
+    </script>
 {% endblock content %}

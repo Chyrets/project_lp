@@ -207,6 +207,10 @@ class AddCommentView(LoginRequiredMixin, View):
             comment.text = request.POST['text']
             comment.profile = profile
             comment.post = post
+
+            if request.POST.get("parent", None):
+                comment.parent_id = int(request.POST.get("parent"))
+
             comment.save()
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
