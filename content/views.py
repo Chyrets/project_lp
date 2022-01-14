@@ -6,7 +6,7 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import TemplateView, FormView, DeleteView
 
-from content.forms import AddEditPostForm
+from content.forms import AddEditPostForm, AddCommentForm
 from content.models import Post, PostReaction, Comment
 from content.services.view_services import add_new_tag, add_remove_reaction
 from profiles.models import Profile
@@ -40,6 +40,7 @@ class PostDetailView(TemplateView):
             post = Post.objects.get(id=post_id, archived=False)
             reaction = PostReaction.objects.filter(post=post)
             comments = Comment.objects.filter(post=post)
+            form = AddCommentForm()
             likes = reaction.filter(reaction=1).count()
             dislikes = reaction.filter(reaction=2).count()
 
@@ -50,6 +51,7 @@ class PostDetailView(TemplateView):
             context['likes'] = likes
             context['dislikes'] = dislikes
             context['comments'] = comments
+            context['form'] = form
         except Post.DoesNotExist:
             raise Http404
 
@@ -175,3 +177,39 @@ class PostReactionView(LoginRequiredMixin, View):
         add_remove_reaction(profile, ct_post, post.pk, reaction)
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+class AddCommentView(LoginRequiredMixin, View):
+    """Отображение формы добавления комментария"""
+    login_url = reverse_lazy('profile:login')
+    form = AddCommentForm
+
+    def get_success_url(self):
+        return HttpResponseRedirect(self.request.META.get('HTTP_REFERER'))
+    
+    def post(self, request, post_id):
+        user = request.user
+        post_id = post_id
+        form = self.form(request.POST)
+
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
+        try:
+            post = Post.objects.get(pk=post_id)
+        except Post.DoesNotExist:
+            raise Http404
+
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.text = request.POST['text']
+            comment.profile = profile
+            comment.post = post
+            comment.save()
+
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+

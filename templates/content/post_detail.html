@@ -37,6 +37,18 @@
         {{ comments.count }} комментариев
     </div>
     <div>
+        <form action="{% url 'content:add_comment' post.pk %}" method="POST">
+            {% csrf_token %}
+            <p>Добавить комментарий:</p>
+            {% for field in form %}
+                {{ field }}
+                <div class="text-danger">{{ field.errors }}</div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary mt-2">Добавить</button>
+        </form>
+    </div>
+    <div>
         <ul class="list-group list-group-flush">
             {% recursetree comments %}
                 <li class="list-group-item">
