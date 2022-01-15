@@ -100,6 +100,7 @@ class Comment(MPTTModel):
     modification_date = models.DateTimeField('Дата изменения', auto_now=True, null=True, blank=True)
     post = models.ForeignKey(Post, related_name="comments", on_delete=models.CASCADE)
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    deleted = models.BooleanField("Удалён", default=False)
     parent = TreeForeignKey(
         "self",
         on_delete=models.SET_NULL,

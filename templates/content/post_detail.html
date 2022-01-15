@@ -53,55 +53,68 @@
         <ul class="list-group list-group-flush">
             {% recursetree comments %}
                 <li class="list-group-item">
-                    <a class="no_underline link-primary"
-                       href="{% url 'content:profile_posts_list' node.profile.slug %}">{{ node.profile }}
-                    </a>
-                    <small>{{ node.publication_date|naturaltime }}</small>
-                    {% if node.changed %}
-                        <small> / Изм. {{ node.modification_date|naturaltime }}</small>
-                    {% endif %}
-                    <p>{{ node.text }}</p>
-                    <a class="btn btn-primary btn-sm mb-2" href="#formComment"
-                       onclick="addComment('{{ node.profile }}', '{{ node.id }}')">Ответить</a>
+                    {% if not node.deleted %}
+                        <a class="no_underline link-primary"
+                           href="{% url 'content:profile_posts_list' node.profile.slug %}">{{ node.profile }}
+                        </a>
+                        <small>{{ node.publication_date|naturaltime }}</small>
+                        {% if node.changed %}
+                            <small> / Изм. {{ node.modification_date|naturaltime }}</small>
+                        {% endif %}
+                        <p>{{ node.text }}</p>
+                        <a class="btn btn-primary btn-sm mb-2" href="#formComment"
+                           onclick="addComment('{{ node.profile }}', '{{ node.id }}')">Ответить</a>
 
-                    {% if request.user == node.profile.user %}
-                        <!-- Button trigger modal -->
-                        <button type="button" class="btn btn-primary btn-sm mb-2" data-bs-toggle="modal"
-                                data-bs-target="#id-{{ node.pk }}">
-                            Изменить
-                        </button>
+                        {% if request.user == node.profile.user %}
+                            <!-- Button trigger modal -->
+                            <button type="button" class="btn btn-primary btn-sm mb-2" data-bs-toggle="modal"
+                                    data-bs-target="#id-{{ node.pk }}">
+                                Изменить
+                            </button>
 
-                        <!-- Modal -->
-                        <form action="{% url 'content:edit_comment' node.id %}" method="post">
-                            {% csrf_token %}
+                            <!-- Modal -->
+                            <form action="{% url 'content:edit_comment' node.id %}" method="post">
+                                {% csrf_token %}
 
-                            <div class="modal fade" id="id-{{ node.pk }}" tabindex="-1"
-                                 aria-labelledby="exampleModalLabel"
-                                 aria-hidden="true">
-                                <div class="modal-dialog modal-lg">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="exampleModalLabel">Редактирование
-                                                комментария</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                    aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
+                                <div class="modal fade" id="id-{{ node.pk }}" tabindex="-1"
+                                     aria-labelledby="exampleModalLabel"
+                                     aria-hidden="true">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLabel">Редактирование
+                                                    комментария</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
                                         <textarea name="text" class="form-control"
                                                   style="height: 200px">{{ node.text }}</textarea>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                                Закрыть
-                                            </button>
-                                            <button type="submit" class="btn btn-primary">
-                                                Сохранить
-                                            </button>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="submit" class="btn btn-primary">
+                                                    Сохранить
+                                                </button>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                    Закрыть
+                                                </button>
+                                                <button class="btn btn-danger"
+                                                        formaction="{% url 'content:delete_comment' node.pk %}"
+                                                        type="submit">
+                                                    Удалить
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </form>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <div>
+                            Неизвестный
+                            <small>{{ node.publication_date|naturaltime }}</small>
+                            <p>Здесь что-то было...</p>
+                        </div>
                     {% endif %}
 
                     {% if not node.is_leaf_comment %}

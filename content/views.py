@@ -236,3 +236,23 @@ class EditCommentView(LoginRequiredMixin, View):
         comment.save(update_fields=['text', 'changed', 'modification_date'])
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+class DeleteCommentView(LoginRequiredMixin, View):
+    """Отображение функционала для удаления комментария"""
+    model = Comment
+    login_url = reverse_lazy('profiles:login')
+
+    def get_success_url(self):
+        return HttpResponseRedirect(self.request.META.get('HTTP_REFERER'))
+
+    def post(self, request, comment_id):
+        try:
+            comment = Comment.objects.get(pk=comment_id)
+        except Comment.DoesNotExist:
+            raise Http404
+
+        comment.deleted = True
+        comment.save(update_fields=['deleted'])
+
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
