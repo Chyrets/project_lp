@@ -189,7 +189,6 @@ class AddCommentView(LoginRequiredMixin, View):
     
     def post(self, request, post_id):
         user = request.user
-        post_id = post_id
         form = self.form(request.POST)
 
         try:
@@ -217,3 +216,23 @@ class AddCommentView(LoginRequiredMixin, View):
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+
+class EditCommentView(LoginRequiredMixin, View):
+    """Отображение функционала изменения комментария"""
+    login_url = reverse_lazy('profile:login')
+
+    def get_success_url(self):
+        return HttpResponseRedirect(self.request.META.get('HTTP_REFERER'))
+
+    def post(self, request, comment_id):
+        try:
+            comment = Comment.objects.get(pk=comment_id)
+        except Comment.DoesNotExist:
+            raise Http404
+
+        text = request.POST['text']
+        comment.text = text
+        comment.changed = True
+        comment.save(update_fields=['text', 'changed', 'modification_date'])
+
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
