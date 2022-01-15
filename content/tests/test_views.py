@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from content.models import Post, PostReaction
+from content.models import Post, PostReaction, Comment
 from content.services.view_services import add_remove_reaction
 from profiles.models import Profile
 
@@ -258,3 +258,27 @@ class PostReactionViewTest(TestCase):
         add_remove_reaction(**self.valid_data)
         dislike = PostReaction.objects.filter().count()
         self.assertEqual(dislike, 1)
+
+
+class AddCommentViewTest(TestCase):
+    """Тесты для класса добавления комментария"""
+
+    def setUp(self) -> None:
+        test_user1 = User.objects.create_user(username='test_user1', password='password')
+        test_user1.save()
+        self.profile = Profile.objects.first()
+        self.test_post = Post.objects.create(
+            title='test post1',
+            caption='About test post1 by test_user1',
+            author=self.profile
+        )
+
+    def test_add_new_comment(self):
+        """Проверка добавления комментария к посту"""
+        self.client.login(username='test_user1', password='password')
+        response = self.client.post(reverse('content:add_comment', kwargs={'post_id': self.test_post.pk}),
+                                    data={'text': 'hello'})
+        comments = Comment.objects.all().count()
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(comments, 1)
