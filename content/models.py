@@ -68,9 +68,12 @@ class Post(models.Model):
 
 class PostReaction(models.Model):
     """Модель лайков/дизлайков для поста"""
+    LIKE = 1
+    DISLIKE = 2
+
     REACTION_CHOICE = (
-        (1, 'Like'),
-        (2, 'Dislike')
+        (LIKE, 'Like'),
+        (DISLIKE, 'Dislike')
     )
 
     profile = models.ForeignKey(

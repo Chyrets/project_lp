@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
 
     'mptt',
+    "debug_toolbar",
 
     'profiles.apps.ProfilesConfig',
     'content.apps.ContentConfig'
@@ -51,6 +52,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = 'project_lp.urls'
@@ -69,6 +72,10 @@ TEMPLATES = [
             ],
         },
     },
+]
+
+INTERNAL_IPS = [
+    '127.0.0.1',
 ]
 
 WSGI_APPLICATION = 'project_lp.wsgi.application'

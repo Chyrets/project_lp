@@ -5,6 +5,7 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import TemplateView, FormView, DeleteView
+from django.db.models import Q, Count
 
 from content.forms import AddEditPostForm, AddCommentForm
 from content.models import Post, PostReaction, Comment
@@ -37,23 +38,26 @@ class PostDetailView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         try:
-            post = Post.objects.get(id=post_id, archived=False)
-            reaction = PostReaction.objects.filter(post=post)
-            comments = Comment.objects.filter(post=post)
-            form = AddCommentForm()
-            likes = reaction.filter(reaction=1).count()
-            dislikes = reaction.filter(reaction=2).count()
-
-            post.views += 1
-            post.save(update_fields=['views'])
-
-            context['post'] = post
-            context['likes'] = likes
-            context['dislikes'] = dislikes
-            context['comments'] = comments
-            context['form'] = form
+            post = Post.objects.prefetch_related(
+                'author__user'
+            ).annotate(
+                likes=Count('reaction', filter=Q(reaction__reaction=PostReaction.LIKE)),
+                dislikes=Count('reaction', filter=Q(reaction__reaction=PostReaction.DISLIKE))
+            ).get(id=post_id, archived=False)
         except Post.DoesNotExist:
             raise Http404
+
+        comments = Comment.objects.filter(post=post).select_related('profile').select_related('profile__user')
+        form = AddCommentForm()
+
+        post.views += 1
+        post.save(update_fields=['views'])
+
+        context['post'] = post
+        context['likes'] = post.likes
+        context['dislikes'] = post.dislikes
+        context['comments'] = comments
+        context['form'] = form
 
         return context
 
@@ -156,7 +160,7 @@ class DeletePostView(LoginRequiredMixin, DeleteView):
 class PostReactionView(LoginRequiredMixin, View):
     """Функционал для кнопок лайков/дизлайков поста"""
     login_url = reverse_lazy('profiles:login')
-    
+
     def get(self, request, post_id, reaction):
         user = request.user
         ct_post = ContentType.objects.get_for_model(Post)
@@ -186,7 +190,7 @@ class AddCommentView(LoginRequiredMixin, View):
 
     def get_success_url(self):
         return HttpResponseRedirect(self.request.META.get('HTTP_REFERER'))
-    
+
     def post(self, request, post_id):
         user = request.user
         form = self.form(request.POST)
