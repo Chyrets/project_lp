@@ -1,17 +1,17 @@
 from django.db import models
-from django.contrib.auth.models import User
 
+from profiles.models import Profile
 
 class Follower(models.Model):
     """Модель подписчиков"""
     recipient = models.ForeignKey(
-        User,
+        Profile,
         verbose_name="Адресат",
         on_delete=models.CASCADE,
         related_name='recipients',
     )
     sender = models.ForeignKey(
-        User,
+        Profile,
         verbose_name="Адресант",
         on_delete=models.CASCADE,
         related_name='senders'
