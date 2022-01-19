@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     "debug_toolbar",
 
     'profiles.apps.ProfilesConfig',
-    'content.apps.ContentConfig'
+    'content.apps.ContentConfig',
+    'followers.apps.FollowersConfig'
 ]
 
 MIDDLEWARE = [
