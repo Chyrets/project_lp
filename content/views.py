@@ -26,6 +26,7 @@ class ProfilePostsView(TemplateView):
             raise Http404
 
         context['profile_posts_list'] = Post.objects.filter(author=author, archived=False).prefetch_related('comments')
+        context['profile'] = author
 
         return context
 

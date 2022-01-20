@@ -3,6 +3,8 @@
 
 {% block content %}
     <div>
+        <a href="{% url 'followers:follow' profile_slug=profile.slug option=1 %}">Подписаться</a>
+        <a href="{% url 'followers:follow' profile_slug=profile.slug option=0 %}">Отписаться</a>
         <ul class="list-group list-group-flush">
             {% for profile_post in profile_posts_list %}
                 <li class="list-group-item mb-4">

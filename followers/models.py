@@ -2,6 +2,7 @@ from django.db import models
 
 from profiles.models import Profile
 
+
 class Follower(models.Model):
     """Модель подписчиков"""
     recipient = models.ForeignKey(
