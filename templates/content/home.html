@@ -41,8 +41,12 @@
 
                     <div class="mb-3">
                         {{ post.views }} просмотров /
-                        {{ post.likes }} лайков /
-                        {{ post.dislikes }} дизлайков /
+                        <a class="no_underline link-primary" href="{% url 'content:post_reaction' post_id=post.pk reaction=1 %}">
+                            {{ post.likes }} лайков /
+                        </a>
+                        <a class="no_underline link-danger" href="{% url 'content:post_reaction' post_id=post.pk reaction=2 %}">
+                            {{ post.dislikes }} дизлайков /
+                        </a>
                         {{ post.comments.count }} комментариев
                     </div>
                 </li>
