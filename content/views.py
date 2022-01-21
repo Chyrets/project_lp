@@ -45,6 +45,25 @@ class HomeView(LoginRequiredMixin, TemplateView):
         return context
 
 
+class PostsByTagView(TemplateView):
+    """Вывод постов по их хэштегу"""
+    template_name = 'content/posts_by_tag.html'
+
+    def get_context_data(self, tag, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        posts = Post.objects.filter(
+            tags__slug__contains=tag
+        ).annotate(
+            likes=Count('reaction', filter=Q(reaction__reaction=PostReaction.LIKE)),
+            dislikes=Count('reaction', filter=Q(reaction__reaction=PostReaction.DISLIKE))
+        ).order_by('-publication_date')
+
+        context['posts'] = posts
+
+        return context
+
+
 class ProfilePostsView(TemplateView):
     """Страница с постами пользователя"""
     template_name = 'content/profile_posts_list.html'

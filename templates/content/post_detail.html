@@ -15,7 +15,7 @@
     </div>
     <div class="mb-3">
         {% for tag in post.tags.all %}
-            <a href="#" class="no_underline">{{ tag.title }}</a>
+            <a href="{% url 'content:posts_by_tag' post.slug %}" class="no_underline">{{ tag.title }}</a>
         {% endfor %}
     </div>
     {% if post.picture %}

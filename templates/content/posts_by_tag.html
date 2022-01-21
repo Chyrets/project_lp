@@ -23,7 +23,7 @@
 
                     <div class="mb-3">
                         {% for tag in post.tags.all %}
-                            <a href="{% url 'content:posts_by_tag' tag.slug %}" class="no_underline">{{ tag.title }}</a>
+                            {{ tag.title }}
                         {% endfor %}
                     </div>
 
@@ -41,12 +41,25 @@
 
                     <div class="mb-3">
                         {{ post.views }} просмотров /
-                        <a class="no_underline link-primary" href="{% url 'content:post_reaction' post_id=post.pk reaction=1 %}">
-                            {{ post.likes }} лайков /
-                        </a>
-                        <a class="no_underline link-danger" href="{% url 'content:post_reaction' post_id=post.pk reaction=2 %}">
-                            {{ post.dislikes }} дизлайков /
-                        </a>
+                        {% if user.authenticate %}
+                            <a class="no_underline link-primary"
+                               href="{% url 'content:post_reaction' post_id=post.pk reaction=1 %}">
+                                {{ post.likes }} лайков /
+                            </a>
+                            <a class="no_underline link-danger"
+                               href="{% url 'content:post_reaction' post_id=post.pk reaction=2 %}">
+                                {{ post.dislikes }} дизлайков /
+                            </a>
+                        {% else %}
+                            <a class="no_underline link-primary"
+                               href="{% url 'profiles:login' %}">
+                                {{ post.likes }} лайков /
+                            </a>
+                            <a class="no_underline link-danger"
+                               href="{% url 'profiles:login' %}">
+                                {{ post.dislikes }} дизлайков /
+                            </a>
+                        {% endif %}
                         {{ post.comments.count }} комментариев
                     </div>
                 </li>
