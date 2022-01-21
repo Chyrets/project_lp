@@ -13,6 +13,38 @@ from content.services.view_services import add_new_tag, add_remove_reaction
 from profiles.models import Profile
 
 
+class HomeView(LoginRequiredMixin, TemplateView):
+    """Главная страница для авторизованных пользователей"""
+    template_name = 'content/home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        user = self.request.user
+
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
+        recipients_posts = Post.objects.filter(
+            author__recipients__sender=profile
+        ).annotate(
+            likes=Count('reaction', filter=Q(reaction__reaction=PostReaction.LIKE)),
+            dislikes=Count('reaction', filter=Q(reaction__reaction=PostReaction.DISLIKE))
+        ).prefetch_related(
+            'tags'
+        ).select_related(
+            'author'
+        ).prefetch_related('comments')
+        profile_posts = Post.objects.filter(author=profile)
+        posts = (recipients_posts | profile_posts).order_by('-publication_date')
+
+        context['posts'] = posts
+
+        return context
+
+
 class ProfilePostsView(TemplateView):
     """Страница с постами пользователя"""
     template_name = 'content/profile_posts_list.html'
