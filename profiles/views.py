@@ -8,16 +8,6 @@ from .models import Profile
 from .forms import CustomUserCreationForm, UserProfileForm
 
 
-def index(request):
-    """Функция отображения для первичной домашней страницы сайта."""
-    title = "Домашняя страница"
-    content = {
-        "title": title
-    }
-
-    return render(request, 'base.html', content)
-
-
 class LoginUserView(View):
     """Авторизация пользователя"""
     template_name = 'profiles/login.html'
@@ -35,7 +25,7 @@ class LoginUserView(View):
 
         if user is not None:
             login(request, user)
-            return redirect('profiles:home')
+            return redirect('content:home')
         else:
             content = {
                 "error": 'Неверные имя пользователя или пароль'
@@ -68,7 +58,7 @@ class RegisterUserView(View):
 
             if user is not None:
                 login(request, user)
-                return redirect('profiles:home')
+                return redirect('content:home')
 
         content = {'form': form}
         return render(request, self.template_name, content)

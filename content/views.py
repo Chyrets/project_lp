@@ -13,6 +13,18 @@ from content.services.view_services import add_new_tag, add_remove_reaction
 from profiles.models import Profile
 
 
+class MasterView(TemplateView):
+    """Отображение первичной страницы"""
+    template_name = 'content/master.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['title'] = 'TyWe'
+
+        return context
+
+
 class HomeView(LoginRequiredMixin, TemplateView):
     """Главная страница для авторизованных пользователей"""
     template_name = 'content/home.html'
