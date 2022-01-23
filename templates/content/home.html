@@ -21,7 +21,7 @@
                             <img src="{% static 'profiles/images/user_icon.png' %}" class="flex-shrink-0 me-3"
                                  alt="None" width="4%">
                         {% endif %}
-                        <a href="#" class="no_underline">{{ post.author }}</a>
+                        <a href="{% url 'content:profile_posts_list' post.author.slug %}" class="no_underline">{{ post.author }}</a>
                         / {{ post.publication_date|naturaltime }}
                         {% if post.changed %}
                             / ред. {{ post.modification_date|naturaltime }}

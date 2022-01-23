@@ -1,19 +1,43 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load humanize %}
 
 {% block content %}
     <div>
-        <a href="{% url 'followers:follow' profile_slug=author.slug option=1 %}">Подписаться</a>
-        <a href="{% url 'followers:follow' profile_slug=author.slug option=0 %}">Отписаться</a>
+        <div class="row">
+            <div class="col-4">
+                {% if author.avatar %}
+                    <img class="flex-shrink-0 me-3" src="{{ author.avatar.url }}" alt="None" width="60%">
+                {% else %}
+                    <img src="{% static 'profiles/images/user_icon.png' %}" class="flex-shrink-0 me-3"
+                         alt="None" width="60%">
+                {% endif %}
+            </div>
+            <div class="col-8 mt-4">
+                <h3>{{ author.name }}</h3>
+                <p>{{ author.about }}</p>
+                {% if author.birthday %}
+                    <p>{{ author.birthday }}</p>
+                {% endif %}
+                {% if author != used_profile %}
+                    {% if not follow_status %}
+                        <a href="{% url 'followers:follow' profile_slug=author.slug option=1 %}"
+                           class="btn btn-primary">
+                            Подписаться
+                        </a>
+                    {% else %}
+                        <a href="{% url 'followers:follow' profile_slug=author.slug option=0 %}"
+                           class="btn btn-primary">
+                            Отписаться
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        <hr>
         <ul class="list-group list-group-flush">
             {% for profile_post in profile_posts_list %}
                 <li class="list-group-item mb-4">
-                    {% if post.author.avatar %}
-                        <img class="flex-shrink-0 me-3" src="{{ post.author.avatar.url }}" alt="None" width="4%">
-                    {% else %}
-                        <img src="{% static 'profiles/images/user_icon.png' %}" class="flex-shrink-0 me-3"
-                             alt="None" width="4%">
-                    {% endif %}
                     <div class="mb-3">
                         <h4>
                             <a href="{{ profile_post.get_absolute_url }}" class="no_underline">
@@ -22,7 +46,14 @@
                         </h4>
                     </div>
                     <div class="mb-3">
-                        <a href="#" class="no_underline">{{ profile_post.author }}</a>
+                        {% if profile_post.author.avatar %}
+                            <img class="flex-shrink-0 me-3" src="{{ profile_post.author.avatar.url }}" alt="None"
+                                 width="4%">
+                        {% else %}
+                            <img src="{% static 'profiles/images/user_icon.png' %}" class="flex-shrink-0 me-3"
+                                 alt="None" width="4%">
+                        {% endif %}
+                        {{ profile_post.author }}
                         / {{ profile_post.publication_date|naturaltime }}
                         {% if profile_post.changed %}
                             / ред. {{ profile_post.modification_date|naturaltime }}

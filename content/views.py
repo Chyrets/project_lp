@@ -10,6 +10,7 @@ from django.db.models import Q, Count
 from content.forms import AddEditPostForm, AddCommentForm
 from content.models import Post, PostReaction, Comment
 from content.services.view_services import add_new_tag, add_remove_reaction
+from followers.models import Follower
 from profiles.models import Profile
 
 
@@ -110,9 +111,12 @@ class ProfilePostsView(TemplateView):
         except Profile.MultipleObjectsReturned:
             profile = Profile.objects.filter(user=user, used=True).first()
 
+        follow_status = Follower.objects.filter(recipient=author, sender=profile).exists()
+
         context['profile_posts_list'] = Post.objects.filter(author=author, archived=False).prefetch_related('comments')
         context['author'] = author
         context['used_profile'] = profile
+        context['follow_status'] = follow_status
 
         return context
 
