@@ -83,8 +83,14 @@ class UserProfilesView(LoginRequiredMixin, View):
         user = request.user
         profiles = Profile.objects.filter(user=user)
 
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
         context = {
-            'profiles': profiles
+            'profiles': profiles,
+            'used_profile': profile
         }
         return render(request, self.template_name, context)
 
@@ -100,8 +106,16 @@ class AddUserProfileView(LoginRequiredMixin, View):
 
     def get(self, request):
         """Отображение формы для добавления нового профиля"""
+        user = request.user
+
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
         context = {
-            'form': self.form()
+            'form': self.form(),
+            'used_profile': profile
         }
         return render(request, self.template_name, context)
 
@@ -139,9 +153,15 @@ class EditUserProfileView(LoginRequiredMixin, View):
         profile = Profile.objects.get(slug=profile_slug, user=user)
         form = self.form(instance=profile)
 
+        try:
+            used_profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            used_profile = Profile.objects.filter(user=user, used=True).first()
+
         context = {
             'profile': profile,
-            'form': form
+            'form': form,
+            'used_profile': used_profile
         }
 
         return render(request, self.template_name, context)
@@ -176,8 +196,14 @@ class DeleteUserProfile(LoginRequiredMixin, View):
         user = request.user
         profile = Profile.objects.get(slug=profile_slug, user=user)
 
+        try:
+            used_profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            used_profile = Profile.objects.filter(user=user, used=True).first()
+
         context = {
-            'profile': profile
+            'profile': profile,
+            'used_profile': used_profile
         }
 
         return render(request, self.template_name, context)

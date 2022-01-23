@@ -20,7 +20,14 @@ class MasterView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context['title'] = 'TyWe'
+        user = self.request.user
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
+        context['title'] = "TyWe"
+        context['used_profile'] = profile
 
         return context
 
@@ -53,6 +60,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
         posts = (recipients_posts | profile_posts).order_by('-publication_date')
 
         context['posts'] = posts
+        context['used_profile'] = profile
 
         return context
 
@@ -64,6 +72,12 @@ class PostsByTagView(TemplateView):
     def get_context_data(self, tag, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        user = self.request.user
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
         posts = Post.objects.filter(
             tags__slug__contains=tag
         ).annotate(
@@ -72,6 +86,7 @@ class PostsByTagView(TemplateView):
         ).order_by('-publication_date')
 
         context['posts'] = posts
+        context['used_profile'] = profile
 
         return context
 
@@ -83,13 +98,21 @@ class ProfilePostsView(TemplateView):
     def get_context_data(self, profile_slug, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        user = self.request.user
+
         try:
             author = Profile.objects.get(slug=profile_slug)
         except Profile.DoesNotExist:
             raise Http404
 
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
         context['profile_posts_list'] = Post.objects.filter(author=author, archived=False).prefetch_related('comments')
-        context['profile'] = author
+        context['author'] = author
+        context['used_profile'] = profile
 
         return context
 
@@ -101,6 +124,8 @@ class PostDetailView(TemplateView):
     def get_context_data(self, post_id, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        user = self.request.user
+
         try:
             post = Post.objects.prefetch_related(
                 'author__user'
@@ -110,6 +135,11 @@ class PostDetailView(TemplateView):
             ).get(id=post_id, archived=False)
         except Post.DoesNotExist:
             raise Http404
+
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
 
         comments = Comment.objects.filter(post=post).select_related('profile').select_related('profile__user')
         form = AddCommentForm()
@@ -122,6 +152,7 @@ class PostDetailView(TemplateView):
         context['dislikes'] = post.dislikes
         context['comments'] = comments
         context['form'] = form
+        context['used_profile'] = profile
 
         return context
 
@@ -138,6 +169,19 @@ class AddPostView(LoginRequiredMixin, FormView):
         # Добавляем аргумент user для конструктора класса AddPostForm
         kwargs.update({'user': self.request.user})
         return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        user = self.request.user
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
+        context['used_profile'] = profile
+
+        return context
 
     def form_valid(self, form):
         instance = form.save(commit=False)
@@ -178,7 +222,14 @@ class EditPostView(LoginRequiredMixin, FormView):
         except Post.DoesNotExist:
             raise Http404
 
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
         context['form'] = self.form_class(instance=post, user=self.request.user)
+        context['used_profile'] = profile
+
         return context
 
     def form_valid(self, form):
@@ -219,6 +270,19 @@ class DeletePostView(LoginRequiredMixin, DeleteView):
             raise Http404
 
         return post
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        user = self.request.user
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
+        context['used_profile'] = profile
+
+        return context
 
 
 class PostReactionView(LoginRequiredMixin, View):

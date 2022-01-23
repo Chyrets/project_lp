@@ -12,6 +12,7 @@
         .no_underline {
             text-decoration: none !important
         }
+
         .line {
             border-left: 2px solid #ccc;
             margin-left: 20px;
@@ -39,7 +40,7 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
-                            {{ request.user }}
+                            {{ used_profile }}
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <li><a class="dropdown-item" href="{% url 'profiles:profiles' %}">Профили</a></li>
