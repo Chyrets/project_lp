@@ -8,9 +8,18 @@
         <ul class="list-group list-group-flush">
             {% for profile_post in profile_posts_list %}
                 <li class="list-group-item mb-4">
+                    {% if post.author.avatar %}
+                        <img class="flex-shrink-0 me-3" src="{{ post.author.avatar.url }}" alt="None" width="4%">
+                    {% else %}
+                        <img src="{% static 'profiles/images/user_icon.png' %}" class="flex-shrink-0 me-3"
+                             alt="None" width="4%">
+                    {% endif %}
                     <div class="mb-3">
-                        <h4><a href="{{ profile_post.get_absolute_url }}"
-                               class="no_underline">{{ profile_post.title }}</a></h4>
+                        <h4>
+                            <a href="{{ profile_post.get_absolute_url }}" class="no_underline">
+                                {{ profile_post.title }}
+                            </a>
+                        </h4>
                     </div>
                     <div class="mb-3">
                         <a href="#" class="no_underline">{{ profile_post.author }}</a>

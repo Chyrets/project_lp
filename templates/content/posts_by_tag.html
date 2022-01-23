@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load humanize %}
 
 {% block content %}
@@ -14,6 +15,12 @@
                     </div>
 
                     <div class="mb-3">
+                        {% if post.author.avatar %}
+                            <img class="flex-shrink-0 me-3" src="{{ post.author.avatar.url }}" alt="None" width="4%">
+                        {% else %}
+                            <img src="{% static 'profiles/images/user_icon.png' %}" class="flex-shrink-0 me-3"
+                                 alt="None" width="4%">
+                        {% endif %}
                         <a href="#" class="no_underline">{{ post.author }}</a>
                         / {{ post.publication_date|naturaltime }}
                         {% if post.changed %}
