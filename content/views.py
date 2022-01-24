@@ -48,7 +48,8 @@ class HomeView(LoginRequiredMixin, TemplateView):
             profile = Profile.objects.filter(user=user, used=True).first()
 
         recipients_posts = Post.objects.filter(
-            author__recipients__sender=profile
+            author__recipients__sender=profile,
+            archived=False
         ).annotate(
             likes=Count('reaction', filter=Q(reaction__reaction=PostReaction.LIKE)),
             dislikes=Count('reaction', filter=Q(reaction__reaction=PostReaction.DISLIKE))
@@ -80,7 +81,8 @@ class PostsByTagView(TemplateView):
             profile = Profile.objects.filter(user=user, used=True).first()
 
         posts = Post.objects.filter(
-            tags__slug__contains=tag
+            tags__slug__contains=tag,
+            archived=False
         ).annotate(
             likes=Count('reaction', filter=Q(reaction__reaction=PostReaction.LIKE)),
             dislikes=Count('reaction', filter=Q(reaction__reaction=PostReaction.DISLIKE))
@@ -111,9 +113,17 @@ class ProfilePostsView(TemplateView):
         except Profile.MultipleObjectsReturned:
             profile = Profile.objects.filter(user=user, used=True).first()
 
+        posts = Post.objects.filter(
+            author=author,
+            archived=False
+        ).annotate(
+            likes=Count('reaction', filter=Q(reaction__reaction=PostReaction.LIKE)),
+            dislikes=Count('reaction', filter=Q(reaction__reaction=PostReaction.DISLIKE))
+        ).prefetch_related('comments')
+
         follow_status = Follower.objects.filter(recipient=author, sender=profile).exists()
 
-        context['profile_posts_list'] = Post.objects.filter(author=author, archived=False).prefetch_related('comments')
+        context['posts'] = posts
         context['author'] = author
         context['used_profile'] = profile
         context['follow_status'] = follow_status
