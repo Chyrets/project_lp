@@ -178,7 +178,7 @@ class AddPostView(LoginRequiredMixin, FormView):
     """Страница для добавления нового поста"""
     form_class = AddEditPostForm
     template_name = 'content/add_or_edit_post.html'
-    success_url = reverse_lazy('profiles:home')
+    success_url = reverse_lazy('content:home')
     login_url = reverse_lazy('profiles:login')
 
     def get_form_kwargs(self):
@@ -196,7 +196,10 @@ class AddPostView(LoginRequiredMixin, FormView):
         except Profile.MultipleObjectsReturned:
             profile = Profile.objects.filter(user=user, used=True).first()
 
-        context['used_profile'] = profile
+        context = {
+            'used_profile': profile,
+            'action': 'add',
+        }
 
         return context
 
@@ -222,7 +225,9 @@ class EditPostView(LoginRequiredMixin, FormView):
     form_class = AddEditPostForm
     template_name = 'content/add_or_edit_post.html'
     login_url = reverse_lazy('profiles:login')
-    success_url = reverse_lazy('profiles:home')
+
+    def get_success_url(self):
+        return reverse_lazy('content:post_detail', kwargs={'post_id': self.kwargs['post_id']})
 
     def get_form_kwargs(self):
         kwargs = super(EditPostView, self).get_form_kwargs()
@@ -244,8 +249,11 @@ class EditPostView(LoginRequiredMixin, FormView):
         except Profile.MultipleObjectsReturned:
             profile = Profile.objects.filter(user=user, used=True).first()
 
-        context['form'] = self.form_class(instance=post, user=self.request.user)
-        context['used_profile'] = profile
+        context = {
+            'form': self.form_class(instance=post, user=self.request.user),
+            'used_profile': profile,
+            'post_pk': post.pk
+        }
 
         return context
 
@@ -267,7 +275,8 @@ class EditPostView(LoginRequiredMixin, FormView):
         post.picture = form.cleaned_data['picture']
         post.author = form.cleaned_data['author']
         post.archived = form.cleaned_data['archived']
-        post.save(update_fields=['title', 'caption', 'picture', 'author', 'archived'])
+        post.changed = True
+        post.save(update_fields=['title', 'caption', 'picture', 'author', 'archived', 'changed', 'modification_date'])
 
         return redirect(self.get_success_url())
 
@@ -276,7 +285,7 @@ class DeletePostView(LoginRequiredMixin, DeleteView):
     """Страница для подтверждения удаления поста"""
     model = Post
     template_name = 'content/delete_post.html'
-    success_url = reverse_lazy('profiles:home')
+    success_url = reverse_lazy('content:home')
     login_url = reverse_lazy('profiles:login')
 
     def get_object(self, queryset=None):

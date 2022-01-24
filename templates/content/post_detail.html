@@ -19,10 +19,14 @@
         {% if post.changed %}
             / ред. {{ post.modification_date|naturaltime }}
         {% endif %}
+        {% if post.author.user == request.user %}
+            <a href="{% url 'content:edit_post' post.pk %}" class="no_underline btn btn-success btn-sm">Редактировать</a>
+            <a href="{% url 'content:delete_post' post.pk %}" class="no_underline btn btn-danger btn-sm">Удалить</a>
+        {% endif %}
     </div>
     <div class="mb-3">
         {% for tag in post.tags.all %}
-            <a href="{% url 'content:posts_by_tag' post.slug %}" class="no_underline">{{ tag.title }}</a>
+            <a href="{% url 'content:posts_by_tag' tag.slug %}" class="no_underline">{{ tag.title }}</a>
         {% endfor %}
     </div>
     {% if post.picture %}
@@ -133,12 +137,6 @@
             {% endrecursetree %}
         </ul>
     </div>
-    {% if post.author.user == request.user %}
-        <div class="'mb-3">
-            <a href="{% url 'content:edit_post' post.pk %}" class="no_underline btn btn-success">Редактировать</a>
-            <a href="{% url 'content:delete_post' post.pk %}" class="no_underline btn btn-danger">Удалить</a>
-        </div>
-    {% endif %}
 
     <script>
         function addComment(name, id) {

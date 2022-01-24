@@ -13,7 +13,14 @@
                 <div class="text-danger">{{ field.errors }}</div>
             {% endfor %}
 
-            <button type="submit" class="btn btn-primary">Добавить</button>
+            {% if action == 'add' %}
+                <button type="submit" class="btn btn-primary">Добавить</button>
+            {% else %}
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <a href="{% url 'content:post_detail' post_pk %}" type="submit" class="btn btn-primary">
+                    Назад
+                </a>
+            {% endif %}
         </form>
     </div>
 {% endblock %}
