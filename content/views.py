@@ -90,6 +90,7 @@ class PostsByTagView(TemplateView):
 
         context['posts'] = posts
         context['used_profile'] = profile
+        context['tag_slug'] = tag
 
         return context
 
