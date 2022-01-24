@@ -119,7 +119,10 @@ class ProfilePostsView(TemplateView):
         ).annotate(
             likes=Count('reaction', filter=Q(reaction__reaction=PostReaction.LIKE)),
             dislikes=Count('reaction', filter=Q(reaction__reaction=PostReaction.DISLIKE))
-        ).prefetch_related('comments')
+        ).prefetch_related(
+            'comments',
+            'tags'
+        ).select_related('author')
 
         follow_status = Follower.objects.filter(recipient=author, sender=profile).exists()
 
