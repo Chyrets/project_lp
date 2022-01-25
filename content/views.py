@@ -67,6 +67,34 @@ class HomeView(LoginRequiredMixin, TemplateView):
         return context
 
 
+class ArchivedPostsView(LoginRequiredMixin, TemplateView):
+    """Отображение архивированных постов"""
+    template_name = 'content/archived_posts.html'
+    login_url = reverse_lazy('profiles:login')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        user = self.request.user
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
+        posts = Post.objects.filter(
+            author=profile,
+            archived=True
+        ).annotate(
+            likes=Count('reaction', filter=Q(reaction__reaction=PostReaction.LIKE)),
+            dislikes=Count('reaction', filter=Q(reaction__reaction=PostReaction.DISLIKE))
+        ).order_by('-publication_date')
+
+        context['posts'] = posts
+        context['used_profile'] = profile
+
+        return context
+
+
 class PostsByTagView(TemplateView):
     """Вывод постов по их хэштегу"""
     template_name = 'content/posts_by_tag.html'
