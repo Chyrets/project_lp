@@ -178,7 +178,7 @@ class PostDetailView(TemplateView):
             ).annotate(
                 likes=Count('reaction', filter=Q(reaction__reaction=PostReaction.LIKE)),
                 dislikes=Count('reaction', filter=Q(reaction__reaction=PostReaction.DISLIKE))
-            ).get(id=post_id, archived=False)
+            ).get(id=post_id)
         except Post.DoesNotExist:
             raise Http404
 
@@ -207,7 +207,10 @@ class PostDetailView(TemplateView):
             'used_profile': profile
         }
 
-        return context
+        if post.archived and user != post.author.user:
+            raise Http404
+        else:
+            return context
 
 
 class AddPostView(LoginRequiredMixin, FormView):
