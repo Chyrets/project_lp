@@ -111,6 +111,7 @@ class Comment(MPTTModel):
         blank=True,
         related_name="children"
     )
+    reaction = GenericRelation("PostReaction", related_query_name="comment", related_name="comments")
 
     def __str__(self):
         return f"{self.profile} - {self.post}"

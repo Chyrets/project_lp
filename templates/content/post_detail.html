@@ -20,7 +20,8 @@
             / ред. {{ post.modification_date|naturaltime }}
         {% endif %}
         {% if post.author.user == request.user %}
-            <a href="{% url 'content:edit_post' post.pk %}" class="no_underline btn btn-success btn-sm">Редактировать</a>
+            <a href="{% url 'content:edit_post' post.pk %}"
+               class="no_underline btn btn-success btn-sm">Редактировать</a>
             <a href="{% url 'content:delete_post' post.pk %}" class="no_underline btn btn-danger btn-sm">Удалить</a>
         {% endif %}
     </div>
@@ -73,6 +74,14 @@
                             <small> / Изм. {{ node.modification_date|naturaltime }}</small>
                         {% endif %}
                         <p>{{ node.text }}</p>
+                        <a class="no_underline link-primary"
+                           href="#">
+                            {{ node.likes }} лайков
+                        </a> /
+                        <a class="no_underline link-danger"
+                           href="#">
+                            {{ node.dislikes }} дизлайков
+                        </a>
                         <a class="btn btn-primary btn-sm mb-2" href="#formComment"
                            onclick="addComment('{{ node.profile }}', '{{ node.id }}')">Ответить</a>
 

@@ -159,18 +159,25 @@ class PostDetailView(TemplateView):
         except Profile.MultipleObjectsReturned:
             profile = Profile.objects.filter(user=user, used=True).first()
 
-        comments = Comment.objects.filter(post=post).select_related('profile').select_related('profile__user')
+        comments = Comment.objects.filter(
+            post=post
+        ).annotate(
+            likes=Count('reaction', filter=Q(reaction__reaction=PostReaction.LIKE)),
+            dislikes=Count('reaction', filter=Q(reaction__reaction=PostReaction.DISLIKE))
+        ).select_related('profile', 'profile__user')
         form = AddCommentForm()
 
         post.views += 1
         post.save(update_fields=['views'])
 
-        context['post'] = post
-        context['likes'] = post.likes
-        context['dislikes'] = post.dislikes
-        context['comments'] = comments
-        context['form'] = form
-        context['used_profile'] = profile
+        context = {
+            'post': post,
+            'likes': post.likes,
+            'dislikes': post.dislikes,
+            'comments': comments,
+            'form': form,
+            'used_profile': profile
+        }
 
         return context
 
@@ -200,6 +207,7 @@ class AddPostView(LoginRequiredMixin, FormView):
         context = {
             'used_profile': profile,
             'action': 'add',
+            'form': self.form_class(user)
         }
 
         return context
