@@ -423,3 +423,26 @@ class DeleteCommentView(LoginRequiredMixin, View):
         comment.save(update_fields=['deleted'])
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+class CommentReactionView(LoginRequiredMixin, View):
+    """Функционал для кнопок реакции комментария"""
+    login_url = reverse_lazy('profile:login')
+
+    def get(self, request, comment_id, reaction):
+        user = request.user
+        ct_comment = ContentType.objects.get_for_model(Comment)
+
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
+        try:
+            comment = Comment.objects.get(pk=comment_id)
+        except Comment.DoesNotExist:
+            raise Http404
+
+        add_remove_reaction(profile, ct_comment, comment.pk, reaction)
+
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

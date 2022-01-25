@@ -69,22 +69,10 @@
                         <a class="no_underline link-primary"
                            href="{% url 'content:profile_posts_list' node.profile.slug %}">{{ node.profile }}
                         </a>
-                        <small>{{ node.publication_date|naturaltime }}</small>
+                        {{ node.publication_date|naturaltime }}
                         {% if node.changed %}
-                            <small> / Изм. {{ node.modification_date|naturaltime }}</small>
+                            / Изм. {{ node.modification_date|naturaltime }}
                         {% endif %}
-                        <p>{{ node.text }}</p>
-                        <a class="no_underline link-primary"
-                           href="#">
-                            {{ node.likes }} лайков
-                        </a> /
-                        <a class="no_underline link-danger"
-                           href="#">
-                            {{ node.dislikes }} дизлайков
-                        </a>
-                        <a class="btn btn-primary btn-sm mb-2" href="#formComment"
-                           onclick="addComment('{{ node.profile }}', '{{ node.id }}')">Ответить</a>
-
                         {% if request.user == node.profile.user %}
                             <!-- Button trigger modal -->
                             <button type="button" class="btn btn-primary btn-sm mb-2" data-bs-toggle="modal"
@@ -129,6 +117,20 @@
                                 </div>
                             </form>
                         {% endif %}
+                        <p>{{ node.text }}</p>
+                        <a class="no_underline link-primary"
+                           href="{% url 'content:comment_reaction' node.pk 1 %}">
+                            {{ node.likes }} лайков
+                        </a>
+                        <a class="no_underline link-danger"
+                           href="{% url 'content:comment_reaction' node.pk 2 %}">
+                            {{ node.dislikes }} дизлайков
+                        </a>
+                        <div>
+                            <a class="btn btn-primary btn-sm mb-2" href="#formComment"
+                               onclick="addComment('{{ node.profile }}', '{{ node.id }}')">Ответить</a>
+                        </div>
+
                     {% else %}
                         <div>
                             Неизвестный
