@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView
 
 from .models import Profile
 from .forms import CustomUserCreationForm, UserProfileForm
@@ -93,6 +94,27 @@ class UserProfilesView(LoginRequiredMixin, View):
             'used_profile': profile
         }
         return render(request, self.template_name, context)
+
+
+class AllProfilesView(TemplateView):
+    """Отображение списка всех профилей"""
+    template_name = 'profiles/all_profiles.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        user = self.request.user
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
+        profiles = Profile.objects.all()
+
+        context['used_profile'] = profile
+        context['profiles'] = profiles
+
+        return context
 
 
 class AddUserProfileView(LoginRequiredMixin, View):

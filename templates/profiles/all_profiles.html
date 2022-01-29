@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <ul class="list-group list-group-flush">
+        {% for profile in profiles %}
+            <li class="list-group-item">
+                <div class="d-flex position-relative">
+                    {% if profile.avatar %}
+                        <img class="flex-shrink-0 me-3" src="{{ profile.avatar.url }}" alt="None" width="10%">
+                    {% else %}
+                        <img src="{% static 'profiles/images/user_icon.png' %}" class="flex-shrink-0 me-3"
+                             alt="None" width="10%">
+                    {% endif %}
+                    {{ profile.name }}
+                    <br>
+                    {{ profile.about }}
+                    <a href="{% url 'content:profile_posts_list' profile.slug %}" class="stretched-link"></a>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

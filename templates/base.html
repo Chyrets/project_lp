@@ -36,6 +36,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'content:archived_posts' %}">Архив</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'profiles:all_profiles' %}">Пользователи</a>
+                </li>
                 {% if request.user.is_authenticated %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
