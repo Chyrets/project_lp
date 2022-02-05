@@ -13,6 +13,11 @@
                         {% if profile.birthday %}
                             <p>{{ profile.birthday }}</p>
                         {% endif %}
+                        {% if profile.used %}
+                            <p class="text-success">Используется</p>
+                        {% else %}
+                            <p>Не используется</p>
+                        {% endif %}
                         <a href="{% url 'profiles:edit_profile' profile.slug %}" class="stretched-link">Редактировать</a>
                     </div>
                 </div>

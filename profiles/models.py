@@ -13,6 +13,7 @@ class Profile(models.Model):
     avatar = models.ImageField('Фотография', upload_to='user/avatar', blank=True, null=True)
     user = models.ForeignKey(User, verbose_name='Пользователь', on_delete=models.CASCADE, related_name='profile')
     slug = models.SlugField('URL', unique=True)
+    used = models.BooleanField("Используется", default=False)
 
     def __str__(self):
         return self.name
