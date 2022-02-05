@@ -4,8 +4,10 @@ from . import views
 
 app_name = 'content'
 urlpatterns = [
+    path('', views.MasterView.as_view(), name='master'),
     path('home/', views.HomeView.as_view(), name='home'),
     path('posts/<slug:profile_slug>/', views.ProfilePostsView.as_view(), name='profile_posts_list'),
+    path('archived-posts/', views.ArchivedPostsView.as_view(), name='archived_posts'),
     path('posts-by-tag/<slug:tag>/', views.PostsByTagView.as_view(), name='posts_by_tag'),
     path('post-detail/<int:post_id>/', views.PostDetailView.as_view(), name='post_detail'),
     path('add-post/', views.AddPostView.as_view(), name='add_post'),
@@ -14,5 +16,10 @@ urlpatterns = [
     path('post-reaction/<int:post_id>/<int:reaction>/', views.PostReactionView.as_view(), name='post_reaction'),
     path('post/<int:post_id>/add-comment/', views.AddCommentView.as_view(), name='add_comment'),
     path('edit-comment/<int:comment_id>/', views.EditCommentView.as_view(), name='edit_comment'),
-    path('delete-comment/<int:comment_id>/', views.DeleteCommentView.as_view(), name='delete_comment')
+    path('delete-comment/<int:comment_id>/', views.DeleteCommentView.as_view(), name='delete_comment'),
+    path(
+        'comment-reaction/<int:comment_id>/<int:reaction>/',
+        views.CommentReactionView.as_view(),
+        name='comment_reaction'
+    )
 ]

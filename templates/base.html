@@ -12,6 +12,7 @@
         .no_underline {
             text-decoration: none !important
         }
+
         .line {
             border-left: 2px solid #ccc;
             margin-left: 20px;
@@ -22,7 +23,7 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">Navbar</a>
+        <a class="navbar-brand" href="{% url 'content:master' %}">TyWe</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -30,16 +31,19 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{% url 'content:home' %}">Home</a>
+                    <a class="nav-link active" aria-current="page" href="{% url 'content:home' %}">Главная</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Link</a>
+                    <a class="nav-link" href="{% url 'content:archived_posts' %}">Архив</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'profiles:all_profiles' %}">Пользователи</a>
                 </li>
                 {% if request.user.is_authenticated %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
-                            {{ request.user }}
+                            {{ used_profile }}
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <li><a class="dropdown-item" href="{% url 'profiles:profiles' %}">Профили</a></li>

@@ -9,6 +9,8 @@ class TagWidgetMixin:
     def format_value(self, value):
         if value:
             value = ' '.join([f'#{tag.title}' for tag in value])
+        else:
+            value = None
         return super().format_value(value)
 
 

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load humanize %}
 
 {% block content %}
@@ -14,7 +15,13 @@
                     </div>
 
                     <div class="mb-3">
-                        <a href="#" class="no_underline">{{ post.author }}</a>
+                        {% if post.author.avatar %}
+                            <img class="flex-shrink-0 me-3" src="{{ post.author.avatar.url }}" alt="None" width="4%">
+                        {% else %}
+                            <img src="{% static 'profiles/images/user_icon.png' %}" class="flex-shrink-0 me-3"
+                                 alt="None" width="4%">
+                        {% endif %}
+                        <a href="{% url 'content:profile_posts_list' post.author.slug %}" class="no_underline">{{ post.author }}</a>
                         / {{ post.publication_date|naturaltime }}
                         {% if post.changed %}
                             / ред. {{ post.modification_date|naturaltime }}
@@ -41,10 +48,12 @@
 
                     <div class="mb-3">
                         {{ post.views }} просмотров /
-                        <a class="no_underline link-primary" href="{% url 'content:post_reaction' post_id=post.pk reaction=1 %}">
+                        <a class="no_underline link-primary"
+                           href="{% url 'content:post_reaction' post_id=post.pk reaction=1 %}">
                             {{ post.likes }} лайков /
                         </a>
-                        <a class="no_underline link-danger" href="{% url 'content:post_reaction' post_id=post.pk reaction=2 %}">
+                        <a class="no_underline link-danger"
+                           href="{% url 'content:post_reaction' post_id=post.pk reaction=2 %}">
                             {{ post.dislikes }} дизлайков /
                         </a>
                         {{ post.comments.count }} комментариев

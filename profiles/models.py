@@ -11,7 +11,7 @@ class Profile(models.Model):
     about = models.TextField('О себе', max_length=500, blank=True, null=True)
     birthday = models.DateField('День рождения', blank=True, null=True)
     avatar = models.ImageField('Фотография', upload_to='user/avatar', blank=True, null=True)
-    user = models.ForeignKey(User, verbose_name='Пользователь', on_delete=models.CASCADE, related_name='profile')
+    user = models.ForeignKey(User, verbose_name='Пользователь', on_delete=models.CASCADE, related_name='profiles')
     slug = models.SlugField('URL', unique=True)
     used = models.BooleanField("Используется", default=False)
 

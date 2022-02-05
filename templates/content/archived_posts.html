@@ -4,37 +4,9 @@
 
 {% block content %}
     <div>
-        <div class="row">
-            <div class="col-4">
-                {% if author.avatar %}
-                    <img class="flex-shrink-0 me-3" src="{{ author.avatar.url }}" alt="None" width="60%">
-                {% else %}
-                    <img src="{% static 'profiles/images/user_icon.png' %}" class="flex-shrink-0 me-3"
-                         alt="None" width="60%">
-                {% endif %}
-            </div>
-            <div class="col-8 mt-4">
-                <h3>{{ author.name }}</h3>
-                <p>{{ author.about }}</p>
-                {% if author.birthday %}
-                    <p>{{ author.birthday }}</p>
-                {% endif %}
-                {% if author != used_profile %}
-                    {% if not follow_status %}
-                        <a href="{% url 'followers:follow' profile_slug=author.slug option=1 %}"
-                           class="btn btn-primary">
-                            Подписаться
-                        </a>
-                    {% else %}
-                        <a href="{% url 'followers:follow' profile_slug=author.slug option=0 %}"
-                           class="btn btn-primary">
-                            Отписаться
-                        </a>
-                    {% endif %}
-                {% endif %}
-            </div>
-        </div>
-        <hr>
+        {% if not posts %}
+            <h4>Здесь пока нету ничего...</h4>
+        {% endif %}
         <ul class="list-group list-group-flush">
             {% for post in posts %}
                 <li class="list-group-item mb-4">

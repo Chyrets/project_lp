@@ -16,11 +16,11 @@ class FollowView(LoginRequiredMixin, View):
         user = request.user
 
         try:
-            profile = Profile.objects.get(user=user, used=True)
+            sender = Profile.objects.get(user=user, used=True)
         except Profile.MultipleObjectsReturned:
-            profile = Profile.objects.filter(user=user, used=True).first()
+            sender = Profile.objects.filter(user=user, used=True).first()
 
-        sender = get_object_or_404(Profile, slug=profile_slug)
+        profile = get_object_or_404(Profile, slug=profile_slug)
 
         if int(option):
             Follower.objects.get_or_create(recipient=profile, sender=sender)

@@ -3,19 +3,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView
 
 from .models import Profile
 from .forms import CustomUserCreationForm, UserProfileForm
-
-
-def index(request):
-    """Функция отображения для первичной домашней страницы сайта."""
-    title = "Домашняя страница"
-    content = {
-        "title": title
-    }
-
-    return render(request, 'base.html', content)
 
 
 class LoginUserView(View):
@@ -35,7 +26,7 @@ class LoginUserView(View):
 
         if user is not None:
             login(request, user)
-            return redirect('profiles:home')
+            return redirect('content:home')
         else:
             content = {
                 "error": 'Неверные имя пользователя или пароль'
@@ -68,7 +59,7 @@ class RegisterUserView(View):
 
             if user is not None:
                 login(request, user)
-                return redirect('profiles:home')
+                return redirect('content:home')
 
         content = {'form': form}
         return render(request, self.template_name, content)
@@ -93,10 +84,37 @@ class UserProfilesView(LoginRequiredMixin, View):
         user = request.user
         profiles = Profile.objects.filter(user=user)
 
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
         context = {
-            'profiles': profiles
+            'profiles': profiles,
+            'used_profile': profile
         }
         return render(request, self.template_name, context)
+
+
+class AllProfilesView(TemplateView):
+    """Отображение списка всех профилей"""
+    template_name = 'profiles/all_profiles.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        user = self.request.user
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
+        profiles = Profile.objects.all()
+
+        context['used_profile'] = profile
+        context['profiles'] = profiles
+
+        return context
 
 
 class AddUserProfileView(LoginRequiredMixin, View):
@@ -110,8 +128,16 @@ class AddUserProfileView(LoginRequiredMixin, View):
 
     def get(self, request):
         """Отображение формы для добавления нового профиля"""
+        user = request.user
+
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
         context = {
-            'form': self.form()
+            'form': self.form(),
+            'used_profile': profile
         }
         return render(request, self.template_name, context)
 
@@ -149,9 +175,15 @@ class EditUserProfileView(LoginRequiredMixin, View):
         profile = Profile.objects.get(slug=profile_slug, user=user)
         form = self.form(instance=profile)
 
+        try:
+            used_profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            used_profile = Profile.objects.filter(user=user, used=True).first()
+
         context = {
             'profile': profile,
-            'form': form
+            'form': form,
+            'used_profile': used_profile
         }
 
         return render(request, self.template_name, context)
@@ -186,8 +218,14 @@ class DeleteUserProfile(LoginRequiredMixin, View):
         user = request.user
         profile = Profile.objects.get(slug=profile_slug, user=user)
 
+        try:
+            used_profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            used_profile = Profile.objects.filter(user=user, used=True).first()
+
         context = {
-            'profile': profile
+            'profile': profile,
+            'used_profile': used_profile
         }
 
         return render(request, self.template_name, context)
