@@ -13,6 +13,57 @@ from content.services.view_services import add_new_tag, add_remove_reaction
 from profiles.models import Profile
 
 
+class HomeView(LoginRequiredMixin, TemplateView):
+    """Главная страница для авторизованных пользователей"""
+    template_name = 'content/home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        user = self.request.user
+
+        try:
+            profile = Profile.objects.get(user=user, used=True)
+        except Profile.MultipleObjectsReturned:
+            profile = Profile.objects.filter(user=user, used=True).first()
+
+        recipients_posts = Post.objects.filter(
+            author__recipients__sender=profile
+        ).annotate(
+            likes=Count('reaction', filter=Q(reaction__reaction=PostReaction.LIKE)),
+            dislikes=Count('reaction', filter=Q(reaction__reaction=PostReaction.DISLIKE))
+        ).prefetch_related(
+            'tags'
+        ).select_related(
+            'author'
+        ).prefetch_related('comments')
+        profile_posts = Post.objects.filter(author=profile)
+        posts = (recipients_posts | profile_posts).order_by('-publication_date')
+
+        context['posts'] = posts
+
+        return context
+
+
+class PostsByTagView(TemplateView):
+    """Вывод постов по их хэштегу"""
+    template_name = 'content/posts_by_tag.html'
+
+    def get_context_data(self, tag, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        posts = Post.objects.filter(
+            tags__slug__contains=tag
+        ).annotate(
+            likes=Count('reaction', filter=Q(reaction__reaction=PostReaction.LIKE)),
+            dislikes=Count('reaction', filter=Q(reaction__reaction=PostReaction.DISLIKE))
+        ).order_by('-publication_date')
+
+        context['posts'] = posts
+
+        return context
+
+
 class ProfilePostsView(TemplateView):
     """Страница с постами пользователя"""
     template_name = 'content/profile_posts_list.html'
@@ -26,6 +77,7 @@ class ProfilePostsView(TemplateView):
             raise Http404
 
         context['profile_posts_list'] = Post.objects.filter(author=author, archived=False).prefetch_related('comments')
+        context['profile'] = author
 
         return context
 
